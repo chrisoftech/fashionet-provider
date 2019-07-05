@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "739406081099",
+    "firebase_url": "https://fashionet-ac13d.firebaseio.com",
+    "project_id": "fashionet-ac13d",
+    "storage_bucket": "fashionet-ac13d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:739406081099:android:f2ddaeb9e6b2592b",
+        "android_client_info": {
+          "package_name": "com.example.fashionet_provider"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "739406081099-su5dphi87o7q6295lbk9hfi65q1rnhhi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.fashionet_provider",
+            "certificate_hash": "a46e2d2c055d2838c31c09e0e395b01fa5da96f3"
+          }
+        },
+        {
+          "client_id": "739406081099-gnsceu9ht20lf5p3e800ivdrttn3nr9e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAHdyYqa0CyVFbIkx4worGoqHLwt4-D2G8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "739406081099-gnsceu9ht20lf5p3e800ivdrttn3nr9e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
