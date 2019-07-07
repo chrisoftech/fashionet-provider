@@ -1,3 +1,4 @@
+import 'package:fashionet_provider/modules/modules.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -24,13 +25,12 @@ class _IntroPageState extends State<IntroPage> {
 
   void _navigateToAuthPage() {
     HapticFeedback.vibrate();
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder: (BuildContext context) =>
-    //         AuthenticationPage(userRepository: _userRepository),
-    //   ),
-    // );
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (BuildContext context) => AuthPage(),
+      ),
+    );
   }
 
   Widget _buildStackBackgroundImage(
