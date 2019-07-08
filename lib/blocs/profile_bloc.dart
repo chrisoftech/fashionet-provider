@@ -1,4 +1,4 @@
-import 'package:fashionet_provider/conts/const.dart';
+import 'package:fashionet_provider/consts/const.dart';
 import 'package:fashionet_provider/repositories/profile_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';

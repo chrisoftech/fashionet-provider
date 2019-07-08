@@ -1,1 +1,1 @@
-export 'profile_wizardform.dart';
+export 'profile_wizardpage.dart';
