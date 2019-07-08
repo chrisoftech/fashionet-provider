@@ -10,7 +10,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<AuthBloc>.value(value: AuthBloc.instance())
+        ChangeNotifierProvider<AuthBloc>.value(value: AuthBloc.instance()),
+        ChangeNotifierProvider<ProfileBloc>.value(value: ProfileBloc.instance())
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -20,24 +21,57 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.indigo,
           accentColor: Colors.orange,
         ),
-        home: Consumer<AuthBloc>(
-          builder: (BuildContext context, AuthBloc authBloc, Widget child) {
-            switch (authBloc.authState) {
-              case AuthState.Uninitialized:
-                return SplashPage();
-              case AuthState.Authenticating:
-              case AuthState.Authenticated:
-                print('Authenticatedddddddd');
-                return HomePage();
-              case AuthState.Unauthenticated:
-                return IntroPage();
-            }
-          },
-        ),
+        home: new DynamicInitialPage(),
         routes: <String, WidgetBuilder>{
           '/home': (BuildContext context) => HomePage(),
         },
       ),
+    );
+  }
+}
+
+class DynamicInitialPage extends StatefulWidget {
+  @override
+  _DynamicInitialPageState createState() => _DynamicInitialPageState();
+}
+
+class _DynamicInitialPageState extends State<DynamicInitialPage> {
+  bool _hasProfile;
+
+  Future<void> _getHasProfile({@required ProfileBloc profileBloc}) async {
+    final bool hasProfile = await profileBloc.hasProfile;
+    setState(() {
+      _hasProfile = hasProfile;
+    });
+  }
+
+  Widget get _displayedAuthenticatedPage {
+    return _hasProfile ? HomePage() : ProfileWizardForm();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final AuthBloc _authBloc = Provider.of<AuthBloc>(context);
+    final ProfileBloc _profileBloc = Provider.of<ProfileBloc>(context);
+
+    return Builder(
+      builder: (BuildContext context) {
+        switch (_authBloc.authState) {
+          case AuthState.Uninitialized:
+            return SplashPage();
+          case AuthState.Authenticating:
+          case AuthState.Authenticated:
+            _getHasProfile(profileBloc: _profileBloc);
+            return _hasProfile != null
+                ? _displayedAuthenticatedPage
+                : Scaffold(
+                    backgroundColor: Colors.transparent,
+                    body: Center(child: CircularProgressIndicator()));
+
+          case AuthState.Unauthenticated:
+            return IntroPage();
+        }
+      },
     );
   }
 }

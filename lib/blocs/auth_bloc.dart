@@ -2,13 +2,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/widgets.dart';
 // import 'package:flutter/cupertino.dart';
 import 'package:libphonenumber/libphonenumber.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 enum AuthState { Uninitialized, Authenticated, Authenticating, Unauthenticated }
 enum VerificationState { Default, Loading, Failure, Success }
 enum AuthLevel { Verification, Authentication }
 
 class AuthBloc with ChangeNotifier {
-  FirebaseAuth _firebaseAuth;
+  final FirebaseAuth _firebaseAuth;
 
   String _verificationId;
   String _authPhoneNumber;
@@ -150,9 +151,16 @@ class AuthBloc with ChangeNotifier {
   }
 
   Future<void> signout() async {
-    await _firebaseAuth.signOut();
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final bool _isCleared = await prefs.clear();
 
-    _authState = AuthState.Unauthenticated;
+    if (_isCleared) {
+      await _firebaseAuth.signOut();
+
+      _authState = AuthState.Unauthenticated;
+      _authLevel = AuthLevel.Verification;
+    }
+
     notifyListeners();
     return;
   }
@@ -164,6 +172,6 @@ class AuthBloc with ChangeNotifier {
       _firebaseUser = firebaseUser;
       _authState = AuthState.Authenticated;
     }
-      notifyListeners();
+    notifyListeners();
   }
 }
