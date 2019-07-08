@@ -62,7 +62,7 @@ class _ProfileImageFormState extends State<ProfileImageForm> {
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(100.0),
-          child: Image.asset('assets/avatars/ps-avatar.png', fit: BoxFit.cover),
+          child: Image.asset('assets/avatars/avatar.png', fit: BoxFit.cover),
         ),
       );
     } else {
@@ -78,41 +78,46 @@ class _ProfileImageFormState extends State<ProfileImageForm> {
     }
   }
 
-  Widget _buildStackOverlayIcon() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.black38,
-        shape: BoxShape.circle,
-      ),
-      child: Center(
-        child: Icon(
-          images.isEmpty ? Icons.camera_alt : Icons.refresh,
-          color: Colors.white24,
-          size: 70.0,
+  Widget _buildStackOverlayControl() {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Material(
+        elevation: 10.0,
+        borderRadius: BorderRadius.circular(25.0),
+        child: InkWell(
+          splashColor: Theme.of(context).primaryColor,
+          borderRadius: BorderRadius.circular(100.0),
+          onTap: loadAssets,
+          child: Container(
+            height: 50.0,
+            width: 50.0,
+            decoration: BoxDecoration(shape: BoxShape.circle),
+            child: Icon(
+              Icons.camera_alt,
+              size: 32.0,
+              color: Theme.of(context).accentColor,
+            ),
+          ),
         ),
       ),
     );
+  
   }
 
   Widget _buildImageContainer() {
-    return InkWell(
-      splashColor: Colors.yellow,
-      borderRadius: BorderRadius.circular(100.0),
-      onTap: loadAssets,
-      child: Container(
-        height: 200.0,
-        width: 200.0,
-        decoration: BoxDecoration(
-          color: Colors.grey,
-          shape: BoxShape.circle,
-          border: Border.all(width: 2.0, color: Colors.white70),
-        ),
-        child: Stack(
-          children: <Widget>[
-            _buildDisplayedImage(),
-            _buildStackOverlayIcon(),
-          ],
-        ),
+    return Container(
+      height: 200.0,
+      width: 200.0,
+      decoration: BoxDecoration(
+        color: Colors.grey,
+        shape: BoxShape.circle,
+        border: Border.all(width: 2.0, color: Colors.white70),
+      ),
+      child: Stack(
+        children: <Widget>[
+          _buildDisplayedImage(),
+          _buildStackOverlayControl(),
+        ],
       ),
     );
   }
@@ -122,13 +127,14 @@ class _ProfileImageFormState extends State<ProfileImageForm> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         Icon(
-          Icons.info,
+          Icons.info_outline,
+          size: 18.0,
           color: Theme.of(context).accentColor,
         ),
         SizedBox(width: 5.0),
         Text(
           'Select a profile avatar',
-          style: TextStyle(color: Colors.white, fontSize: 20.0),
+          style: TextStyle(color: Colors.white),
         ),
       ],
     );

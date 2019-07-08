@@ -21,9 +21,9 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
     _pageController.dispose();
   }
 
-  void _jumpToPreviousPage() {
+  void _jumpToPreviousPage({@required AuthBloc authBloc}) {
     if (_currentWizardPageIndex == 0) {
-      // _authenticationBloc.onLoggedOut();
+      authBloc.signout();
     } else {
       _pageController.jumpToPage(--_currentWizardPageIndex);
     }
@@ -80,7 +80,7 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
     );
   }
 
-  Widget _buildFormWizardActions() {
+  Widget _buildFormWizardActions({@required AuthBloc authBloc}) {
     return Positioned(
       left: 0.0,
       right: 0.0,
@@ -109,7 +109,7 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
                       style: TextStyle(
                           color: Theme.of(context).accentColor, fontSize: 20.0),
                     ),
-                    onPressed: _jumpToPreviousPage,
+                    onPressed: () => _jumpToPreviousPage(authBloc: authBloc),
                   ),
             FlatButton(
               splashColor: Colors.white30,
@@ -153,7 +153,7 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
         children: <Widget>[
           _pageView,
           _buildFormWizardIndicator(),
-          _buildFormWizardActions()
+          _buildFormWizardActions(authBloc: _authBloc)
         ],
       ),
     );
