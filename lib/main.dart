@@ -34,38 +34,9 @@ class MyApp extends StatelessWidget {
             }
           },
         ),
-      ),
-    );
-  }
-}
-
-class SplashPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Text('Splash Page!'),
-      ),
-    );
-  }
-}
-
-class HomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final AuthBloc _authBloc = Provider.of<AuthBloc>(context);
-
-    return Scaffold(
-      body: Center(
-        child: Column(
-          children: <Widget>[
-            Text('Home Page!'),
-            RaisedButton(
-              child: Text('Logout'),
-              onPressed: () => _authBloc.signout(),
-            )
-          ],
-        ),
+        routes: <String, WidgetBuilder>{
+          '/home': (BuildContext context) => HomePage(),
+        },
       ),
     );
   }

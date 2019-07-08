@@ -164,6 +164,6 @@ class AuthBloc with ChangeNotifier {
       _firebaseUser = firebaseUser;
       _authState = AuthState.Authenticated;
     }
-    notifyListeners();
+      notifyListeners();
   }
 }

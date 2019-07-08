@@ -43,6 +43,8 @@ class _LoginFormState extends State<LoginForm> {
           content: 'Authentication sucessfull',
           icon: Icons.verified_user,
           isError: false);
+
+      Navigator.of(context).pop();
     } else {
       _showMessageSnackBar(
           content: 'Sorry! Something went wrong!',
