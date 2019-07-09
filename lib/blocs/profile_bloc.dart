@@ -13,6 +13,8 @@ class ProfileBloc with ChangeNotifier {
   final AuthBloc _authBloc;
 
   Asset _profileImage;
+  String _profileFullname;
+
   ProfileState _profileState = ProfileState.Default;
 
   ProfileBloc.instance()
@@ -28,8 +30,10 @@ class ProfileBloc with ChangeNotifier {
   }
 
   // getters
-  ProfileState get profileState => _profileState;
   Asset get profileImage => _profileImage;
+  String get profileFullname => _profileFullname;
+
+  ProfileState get profileState => _profileState;
 
   Future<int> get profileFormWizardProgressIndex async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -38,14 +42,19 @@ class ProfileBloc with ChangeNotifier {
         : 0;
   }
 
+  // setters
   void setProfileImage({@required Asset profileImage}) {
     _profileImage = profileImage;
     notifyListeners();
   }
 
+  void setProfileFullname({@required String fullname}) {
+    _profileFullname = fullname;
+    notifyListeners();
+  }
+
   Future<void> _persistProfileFormWizardProgress(
       {@required int nextWizardIndex}) async {
-
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setInt(PROFILE_WIZARD_INDEX, nextWizardIndex);
     return;
@@ -78,6 +87,30 @@ class ProfileBloc with ChangeNotifier {
 
       _profileState = ProfileState.Failure;
       notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> saveProfileFullname() async {
+    try {
+      _profileState = ProfileState.Loading;
+      notifyListeners();
+
+      // final String _userId = await _authBloc.getUser;
+      // await _profileRepository.saveProfileFullname(
+      //     userId: _userId, fullname: profileFullname);
+      await Future.delayed(Duration(seconds: 5));
+
+      // saves next profile-wizard-page-index for progress
+      _persistProfileFormWizardProgress(nextWizardIndex: 2);
+
+      _profileState = ProfileState.Success;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _profileState = ProfileState.Failure;
+      notifyListeners();
+
       return false;
     }
   }

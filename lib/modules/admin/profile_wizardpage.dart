@@ -44,6 +44,11 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
     });
   }
 
+  bool _isContinueButonEnabled() {
+    final bool _isLoading = _profileBloc.profileState == ProfileState.Loading;
+    return _isLoading ? false : true;
+  }
+
   void _jumpToPreviousPage({@required AuthBloc authBloc}) {
     if (_currentWizardPageIndex == 0) {
       authBloc.signout();
@@ -55,13 +60,15 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
   Future _jumpToNextPage({@required AuthBloc authBloc}) async {
     if (_currentWizardPageIndex == 0) {
       await _uploadProfileImage();
-      _getManagePageRouteTransitions();
-      // _pageController.jumpToPage(++_currentWizardPageIndex);
-    } else if (_currentWizardPageIndex > 0) {
+    } else if (_currentWizardPageIndex == 1) {
+      await _saveProfileFullname();
+    } else if (_currentWizardPageIndex > 1) {
       authBloc.signout();
     } else if (_currentWizardPageIndex == 4) {
       Navigator.of(context).pushReplacementNamed('/home');
     }
+
+    _getManagePageRouteTransitions();
   }
 
   Future<void> _uploadProfileImage() async {
@@ -75,6 +82,27 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
     if (_isUploaded) {
       _showMessageSnackBar(
           content: 'Profile image upload sucessful',
+          icon: Icons.check,
+          isError: false);
+    } else {
+      _showMessageSnackBar(
+          content: 'Sorry! Something went wrong! Try again',
+          icon: Icons.error_outline,
+          isError: true);
+    }
+  }
+
+  Future<void> _saveProfileFullname() async {
+    if (_profileBloc.profileFullname == null) {
+      _showErrorSnackBar(content: 'Please enter your fullname to continue!');
+      return;
+    }
+
+    final bool _isUploaded = await _profileBloc.saveProfileFullname();
+
+    if (_isUploaded) {
+      _showMessageSnackBar(
+          content: 'Profile fullname saved sucessfully',
           icon: Icons.check,
           isError: false);
     } else {
@@ -203,7 +231,9 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
                 style: TextStyle(
                     color: Theme.of(context).accentColor, fontSize: 20.0),
               ),
-              onPressed: () => _jumpToNextPage(authBloc: authBloc),
+              onPressed: !_isContinueButonEnabled()
+                  ? null
+                  : () => _jumpToNextPage(authBloc: authBloc),
             ),
           ],
         ),
@@ -226,9 +256,8 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
       },
       children: <Widget>[
         ProfileImageForm(),
-        ProfileImageForm(),
-        ProfileImageForm(),
-        // ProfileBioForm(),
+        ProfileBioForm(),
+        ProfileBioForm(),
         // ProfileBusinessForm(),
         // ProfileContactForm(),
         // ProfileLocationForm(),
