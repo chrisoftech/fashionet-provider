@@ -13,6 +13,7 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
   PageView _pageView;
 
   int _currentWizardPageIndex = 0;
+  BuildContext _context;
 
   @override
   void dispose() {
@@ -29,12 +30,71 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
     }
   }
 
-  void _jumpToNextPage() {
-    if (_currentWizardPageIndex == 4) {
+  Future _jumpToNextPage({@required ProfileBloc profileBloc}) async {
+    if (_currentWizardPageIndex == 0) {
+      await _uploadProfileImage(profileBloc: profileBloc);
+      // _pageController.jumpToPage(++_currentWizardPageIndex);
+    } else if (_currentWizardPageIndex == 4) {
       Navigator.of(context).pushReplacementNamed('/home');
-    } else {
-      _pageController.jumpToPage(++_currentWizardPageIndex);
     }
+  }
+
+  Future<void> _uploadProfileImage({@required ProfileBloc profileBloc}) async {
+    if (profileBloc.profileImage == null) {
+      _showErrorSnackBar(content: 'Please select an image to upload!');
+      return;
+    }
+
+    final bool _isUploaded = await profileBloc.uploadProfileImage();
+
+    if (_isUploaded) {
+      _showMessageSnackBar(
+          content: 'Profile image upload sucessful',
+          icon: Icons.check,
+          isError: false);
+    } else {
+      _showMessageSnackBar(
+          content: 'Sorry! Something went wrong! Try again',
+          icon: Icons.error_outline,
+          isError: true);
+    }
+  }
+
+  _showErrorSnackBar({@required String content}) {
+    Scaffold.of(_context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          duration: Duration(seconds: 4),
+          content: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(child: Text(content)),
+              Icon(Icons.info_outline, color: Colors.red),
+            ],
+          ),
+        ),
+      );
+  }
+
+  _showMessageSnackBar(
+      {@required String content,
+      @required IconData icon,
+      @required bool isError}) {
+    Scaffold.of(_context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          duration: Duration(seconds: 4),
+          content: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(child: Text('$content')),
+              Icon(icon, color: isError ? Colors.red : Colors.green),
+            ],
+          ),
+        ),
+      );
   }
 
   Widget _buildActiveWizardPage() {
@@ -80,7 +140,8 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
     );
   }
 
-  Widget _buildFormWizardActions({@required AuthBloc authBloc}) {
+  Widget _buildFormWizardActions(
+      {@required AuthBloc authBloc, @required ProfileBloc profileBloc}) {
     return Positioned(
       left: 0.0,
       right: 0.0,
@@ -118,7 +179,7 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
                 style: TextStyle(
                     color: Theme.of(context).accentColor, fontSize: 20.0),
               ),
-              onPressed: _jumpToNextPage,
+              onPressed: () => _jumpToNextPage(profileBloc: profileBloc),
             ),
           ],
         ),
@@ -129,6 +190,7 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
   @override
   Widget build(BuildContext context) {
     final AuthBloc _authBloc = Provider.of<AuthBloc>(context);
+    final ProfileBloc _profileBloc = Provider.of<ProfileBloc>(context);
 
     _pageView = PageView(
       physics: NeverScrollableScrollPhysics(),
@@ -149,12 +211,20 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
 
     return Scaffold(
       backgroundColor: Theme.of(context).primaryColor,
-      body: Stack(
-        children: <Widget>[
-          _pageView,
-          _buildFormWizardIndicator(),
-          _buildFormWizardActions(authBloc: _authBloc)
-        ],
+      body: Builder(
+        builder: (BuildContext context) {
+          _context = context;
+
+          return Stack(
+            children: <Widget>[
+              _pageView,
+              _buildFormWizardIndicator(),
+              _buildFormWizardActions(
+                  authBloc: _authBloc,
+                  profileBloc: _profileBloc)
+            ],
+          );
+        },
       ),
     );
   }

@@ -40,7 +40,7 @@ class _LoginFormState extends State<LoginForm> {
 
     if (_isAuthenticated) {
       _showMessageSnackBar(
-          content: 'Authentication sucessfull',
+          content: 'Authentication sucessful',
           icon: Icons.verified_user,
           isError: false);
 

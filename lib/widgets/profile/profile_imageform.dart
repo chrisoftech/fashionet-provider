@@ -1,7 +1,9 @@
+import 'package:fashionet_provider/blocs/blocs.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 class ProfileImageForm extends StatefulWidget {
   @override
@@ -12,6 +14,11 @@ class _ProfileImageFormState extends State<ProfileImageForm> {
   List<Asset> images = List<Asset>();
   String _error = 'No Error Dectected';
 
+  bool _isSelectImageControlEnabled({@required ProfileBloc profileBloc}) {
+    final bool _isLoading = profileBloc.profileState == ProfileState.Loading;
+    return _isLoading ? false : true;
+  }
+
   Future<void> deleteAssets() async {
     await MultiImagePicker.deleteImages(assets: images);
     setState(() {
@@ -19,7 +26,7 @@ class _ProfileImageFormState extends State<ProfileImageForm> {
     });
   }
 
-  Future<void> loadAssets() async {
+  Future<void> loadAssets({@required ProfileBloc profileBloc}) async {
     List<Asset> resultList = List<Asset>();
     String error = 'No Error Dectected';
 
@@ -47,7 +54,8 @@ class _ProfileImageFormState extends State<ProfileImageForm> {
 
     setState(() {
       images = resultList;
-      // if (images.isNotEmpty) _onUploadProfileImage(images[0]);
+      if (images.isNotEmpty)
+        profileBloc.setProfileImage(profileImage: images[0]);
       _error = error;
     });
   }
@@ -78,33 +86,37 @@ class _ProfileImageFormState extends State<ProfileImageForm> {
     }
   }
 
-  Widget _buildStackOverlayControl() {
+  Widget _buildStackOverlayControl({@required ProfileBloc profileBloc}) {
     return Align(
       alignment: Alignment.bottomCenter,
       child: Material(
         elevation: 10.0,
+        color: Colors.white30,
         borderRadius: BorderRadius.circular(25.0),
         child: InkWell(
           splashColor: Theme.of(context).primaryColor,
           borderRadius: BorderRadius.circular(100.0),
-          onTap: loadAssets,
+          onTap: !_isSelectImageControlEnabled(profileBloc: profileBloc)
+              ? null
+              : () => loadAssets(profileBloc: profileBloc),
           child: Container(
             height: 50.0,
             width: 50.0,
             decoration: BoxDecoration(shape: BoxShape.circle),
-            child: Icon(
-              Icons.camera_alt,
-              size: 32.0,
-              color: Theme.of(context).accentColor,
-            ),
+            child: profileBloc.profileState == ProfileState.Loading
+                ? Center(child: CircularProgressIndicator())
+                : Icon(
+                    Icons.camera_alt,
+                    size: 32.0,
+                    color: Theme.of(context).accentColor,
+                  ),
           ),
         ),
       ),
     );
-  
   }
 
-  Widget _buildImageContainer() {
+  Widget _buildImageContainer({@required ProfileBloc profileBloc}) {
     return Container(
       height: 200.0,
       width: 200.0,
@@ -116,7 +128,7 @@ class _ProfileImageFormState extends State<ProfileImageForm> {
       child: Stack(
         children: <Widget>[
           _buildDisplayedImage(),
-          _buildStackOverlayControl(),
+          _buildStackOverlayControl(profileBloc: profileBloc),
         ],
       ),
     );
@@ -142,6 +154,8 @@ class _ProfileImageFormState extends State<ProfileImageForm> {
 
   @override
   Widget build(BuildContext context) {
+    final ProfileBloc _profileBloc = Provider.of<ProfileBloc>(context);
+
     return Container(
       child: Center(
         child: Container(
@@ -149,7 +163,7 @@ class _ProfileImageFormState extends State<ProfileImageForm> {
           width: 400.0,
           child: Column(
             children: <Widget>[
-              _buildImageContainer(),
+              _buildImageContainer(profileBloc: _profileBloc),
               SizedBox(height: 20.0),
               _buildImageMessage(context: context),
             ],
