@@ -45,8 +45,10 @@ class _DynamicInitialPageState extends State<DynamicInitialPage> {
     });
   }
 
-  Widget get _displayedAuthenticatedPage {
-    return _hasProfile ? HomePage() : ProfileWizardForm();
+  Widget _displayedAuthenticatedPage({@required ProfileBloc profileBloc}) {
+    return _hasProfile
+        ? HomePage()
+        : ProfileWizardForm(profileBloc: profileBloc);
   }
 
   @override
@@ -63,7 +65,7 @@ class _DynamicInitialPageState extends State<DynamicInitialPage> {
           case AuthState.Authenticated:
             _getHasProfile(profileBloc: _profileBloc);
             return _hasProfile != null
-                ? _displayedAuthenticatedPage
+                ? _displayedAuthenticatedPage(profileBloc: _profileBloc)
                 : Scaffold(
                     backgroundColor: Colors.transparent,
                     body: Center(child: CircularProgressIndicator()));

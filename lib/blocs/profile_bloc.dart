@@ -31,14 +31,24 @@ class ProfileBloc with ChangeNotifier {
   ProfileState get profileState => _profileState;
   Asset get profileImage => _profileImage;
 
+  Future<int> get profileFormWizardProgressIndex async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(PROFILE_WIZARD_INDEX) != null
+        ? prefs.getInt(PROFILE_WIZARD_INDEX)
+        : 0;
+  }
+
   void setProfileImage({@required Asset profileImage}) {
     _profileImage = profileImage;
     notifyListeners();
   }
 
-  Future<void> persistProfileWizardProgress({@required int wizardIndex}) async {
+  Future<void> _persistProfileFormWizardProgress(
+      {@required int nextWizardIndex}) async {
+
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(PROFILE_WIZARD_INDEX, wizardIndex);
+    await prefs.setInt(PROFILE_WIZARD_INDEX, nextWizardIndex);
+    return;
   }
 
   Future<bool> uploadProfileImage() async {
@@ -55,6 +65,9 @@ class ProfileBloc with ChangeNotifier {
       //     userId: _userId, profileImageUrl: _profileImageUrl);
 
       await Future.delayed(Duration(seconds: 5));
+
+      // saves next profile-wizard-page-index for progress
+      _persistProfileFormWizardProgress(nextWizardIndex: 1);
 
       _profileState = ProfileState.Success;
       notifyListeners();

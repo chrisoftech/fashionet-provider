@@ -19,16 +19,19 @@ class _ProfileImageFormState extends State<ProfileImageForm> {
     return _isLoading ? false : true;
   }
 
-  Future<void> deleteAssets() async {
-    await MultiImagePicker.deleteImages(assets: images);
-    setState(() {
-      images = List<Asset>();
-    });
-  }
+  // Future<void> _deleteAssets() async {
+  //   await MultiImagePicker.deleteImages(assets: images);
+  //   setState(() {
+  //     images = List<Asset>();
+  //   });
+  // }
 
-  Future<void> loadAssets({@required ProfileBloc profileBloc}) async {
+  Future<void> _loadAssets({@required ProfileBloc profileBloc}) async {
     List<Asset> resultList = List<Asset>();
     String error = 'No Error Dectected';
+
+    // clear existing selected profile image
+    profileBloc.setProfileImage(profileImage: null);
 
     try {
       resultList = await MultiImagePicker.pickImages(
@@ -98,7 +101,7 @@ class _ProfileImageFormState extends State<ProfileImageForm> {
           borderRadius: BorderRadius.circular(100.0),
           onTap: !_isSelectImageControlEnabled(profileBloc: profileBloc)
               ? null
-              : () => loadAssets(profileBloc: profileBloc),
+              : () => _loadAssets(profileBloc: profileBloc),
           child: Container(
             height: 50.0,
             width: 50.0,
@@ -134,7 +137,7 @@ class _ProfileImageFormState extends State<ProfileImageForm> {
     );
   }
 
-  Widget _buildImageMessage({@required BuildContext context}) {
+  Widget _buildImageMessage() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
@@ -165,7 +168,7 @@ class _ProfileImageFormState extends State<ProfileImageForm> {
             children: <Widget>[
               _buildImageContainer(profileBloc: _profileBloc),
               SizedBox(height: 20.0),
-              _buildImageMessage(context: context),
+              _buildImageMessage(),
             ],
           ),
         ),

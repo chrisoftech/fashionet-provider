@@ -4,6 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class ProfileWizardForm extends StatefulWidget {
+  final ProfileBloc _profileBloc;
+
+  const ProfileWizardForm({Key key, @required ProfileBloc profileBloc})
+      : _profileBloc = profileBloc,
+        super(key: key);
+
   @override
   _ProfileWizardFormState createState() => _ProfileWizardFormState();
 }
@@ -15,11 +21,27 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
   int _currentWizardPageIndex = 0;
   BuildContext _context;
 
+  ProfileBloc get _profileBloc => widget._profileBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _getManagePageRouteTransitions();
+  }
+
   @override
   void dispose() {
     super.dispose();
 
     _pageController.dispose();
+  }
+
+  void _getManagePageRouteTransitions() {
+    _profileBloc.profileFormWizardProgressIndex.then((int _wizardPageIndex) {
+      setState(() {
+        _pageController.jumpToPage(_wizardPageIndex);
+      });
+    });
   }
 
   void _jumpToPreviousPage({@required AuthBloc authBloc}) {
@@ -30,22 +52,25 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
     }
   }
 
-  Future _jumpToNextPage({@required ProfileBloc profileBloc}) async {
+  Future _jumpToNextPage({@required AuthBloc authBloc}) async {
     if (_currentWizardPageIndex == 0) {
-      await _uploadProfileImage(profileBloc: profileBloc);
+      await _uploadProfileImage();
+      _getManagePageRouteTransitions();
       // _pageController.jumpToPage(++_currentWizardPageIndex);
+    } else if (_currentWizardPageIndex > 0) {
+      authBloc.signout();
     } else if (_currentWizardPageIndex == 4) {
       Navigator.of(context).pushReplacementNamed('/home');
     }
   }
 
-  Future<void> _uploadProfileImage({@required ProfileBloc profileBloc}) async {
-    if (profileBloc.profileImage == null) {
+  Future<void> _uploadProfileImage() async {
+    if (_profileBloc.profileImage == null) {
       _showErrorSnackBar(content: 'Please select an image to upload!');
       return;
     }
 
-    final bool _isUploaded = await profileBloc.uploadProfileImage();
+    final bool _isUploaded = await _profileBloc.uploadProfileImage();
 
     if (_isUploaded) {
       _showMessageSnackBar(
@@ -140,8 +165,7 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
     );
   }
 
-  Widget _buildFormWizardActions(
-      {@required AuthBloc authBloc, @required ProfileBloc profileBloc}) {
+  Widget _buildFormWizardActions({@required AuthBloc authBloc}) {
     return Positioned(
       left: 0.0,
       right: 0.0,
@@ -179,7 +203,7 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
                 style: TextStyle(
                     color: Theme.of(context).accentColor, fontSize: 20.0),
               ),
-              onPressed: () => _jumpToNextPage(profileBloc: profileBloc),
+              onPressed: () => _jumpToNextPage(authBloc: authBloc),
             ),
           ],
         ),
@@ -190,7 +214,7 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
   @override
   Widget build(BuildContext context) {
     final AuthBloc _authBloc = Provider.of<AuthBloc>(context);
-    final ProfileBloc _profileBloc = Provider.of<ProfileBloc>(context);
+    // final ProfileBloc _profileBloc = Provider.of<ProfileBloc>(context);
 
     _pageView = PageView(
       physics: NeverScrollableScrollPhysics(),
@@ -201,6 +225,8 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
         });
       },
       children: <Widget>[
+        ProfileImageForm(),
+        ProfileImageForm(),
         ProfileImageForm(),
         // ProfileBioForm(),
         // ProfileBusinessForm(),
@@ -215,13 +241,13 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
         builder: (BuildContext context) {
           _context = context;
 
+          // _getProfileWizardProgressIndex(profileBloc: _profileBloc);
+
           return Stack(
             children: <Widget>[
               _pageView,
               _buildFormWizardIndicator(),
-              _buildFormWizardActions(
-                  authBloc: _authBloc,
-                  profileBloc: _profileBloc)
+              _buildFormWizardActions(authBloc: _authBloc)
             ],
           );
         },
