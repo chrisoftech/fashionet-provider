@@ -16,7 +16,12 @@ class ProfileBloc with ChangeNotifier {
   String _profileFullname;
   Map<String, String> _profileBusiness = {
     'businessName': null,
-    'businessDetails': null,
+    'businessDescription': null,
+  };
+
+  Map<String, String> _profileContacts = {
+    'mobileNumber': null,
+    'otherNumber': null,
   };
 
   ProfileState _profileState = ProfileState.Default;
@@ -37,6 +42,7 @@ class ProfileBloc with ChangeNotifier {
   Asset get profileImage => _profileImage;
   String get profileFullname => _profileFullname;
   Map<String, String> get profileBusiness => _profileBusiness;
+  Map<String, String> get profileContacts => _profileContacts;
 
   ProfileState get profileState => _profileState;
 
@@ -60,6 +66,11 @@ class ProfileBloc with ChangeNotifier {
 
   void setProfileBusiness({@required Map<String, String> profileBusiness}) {
     _profileBusiness = profileBusiness;
+    notifyListeners();
+  }
+
+  void setProfileContacts({@required Map<String, String> profileContacts}) {
+    _profileContacts = profileContacts;
     notifyListeners();
   }
 
@@ -130,16 +141,40 @@ class ProfileBloc with ChangeNotifier {
       _profileState = ProfileState.Loading;
       notifyListeners();
 
-      // final String _userId = await _authBloc.getUser;
-      // _profileRepository.saveProfileBusiness(
-      //     userId: _userId, profileBusiness: profileBusiness);
-      print('Business Name ${_profileBusiness['businessName']}');
-      print('Business Details ${_profileBusiness['businessDetails']}');
+      final String _userId = await _authBloc.getUser;
+      _profileRepository.saveProfileBusiness(
+          userId: _userId, profileBusiness: profileBusiness);
 
-      await Future.delayed(Duration(seconds: 3));
+      // await Future.delayed(Duration(seconds: 3));
 
       // saves next profile-wizard-page-index for progress
       _persistProfileFormWizardProgress(nextWizardIndex: 3);
+
+      _profileState = ProfileState.Success;
+      notifyListeners();
+
+      return true;
+    } catch (e) {
+      _profileState = ProfileState.Failure;
+      notifyListeners();
+
+      return false;
+    }
+  }
+
+  Future<bool> saveProfileContacts() async {
+    try {
+      _profileState = ProfileState.Loading;
+      notifyListeners();
+
+      final String _userId = await _authBloc.getUser;
+      _profileRepository.saveProfileContacts(
+          userId: _userId, profileContacts: profileContacts);
+
+      // await Future.delayed(Duration(seconds: 3));
+
+      // saves next profile-wizard-page-index for progress
+      _persistProfileFormWizardProgress(nextWizardIndex: 4);
 
       _profileState = ProfileState.Success;
       notifyListeners();

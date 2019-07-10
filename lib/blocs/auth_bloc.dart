@@ -38,6 +38,10 @@ class AuthBloc with ChangeNotifier {
     return (await _firebaseAuth.currentUser()).uid;
   }
 
+  Future<String> get getUserPhoneNumber async {
+    return (await _firebaseAuth.currentUser()).phoneNumber;
+  }
+
   // setters
   set authPhoneNumber(String authPhoneNumber) {
     _authPhoneNumber = authPhoneNumber;

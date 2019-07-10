@@ -65,8 +65,8 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
       await _saveProfileFullname();
     } else if (_currentWizardPageIndex == 2) {
       await _saveProfileBusinessDetails();
-    } else if (_currentWizardPageIndex > 3) {
-      authBloc.signout();
+    } else if (_currentWizardPageIndex == 3) {
+      await _saveProfileContactDetails();
     } else if (_currentWizardPageIndex == 4) {
       Navigator.of(context).pushReplacementNamed('/home');
     }
@@ -117,18 +117,40 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
   }
 
   Future<void> _saveProfileBusinessDetails() async {
-    // if (_profileBloc.profileBusiness['businessName'] == null ||
-    //     _profileBloc.profileBusiness['businessDetails'] == null) {
-    //   _showErrorSnackBar(
-    //       content: 'Please enter your business information to continue!');
-    //   return;
-    // }
+    if (_profileBloc.profileBusiness['businessName'] == null ||
+        _profileBloc.profileBusiness['businessDescription'] == null) {
+      _showErrorSnackBar(
+          content: 'Please enter your business information to continue!');
+      return;
+    }
 
     final bool _isUploaded = await _profileBloc.saveProfileBusiness();
 
     if (_isUploaded) {
       _showMessageSnackBar(
-          content: 'Profile fullname saved sucessfully',
+          content: 'Profile business information saved sucessfully',
+          icon: Icons.check,
+          isError: false);
+    } else {
+      _showMessageSnackBar(
+          content: 'Sorry! Something went wrong! Try again',
+          icon: Icons.error_outline,
+          isError: true);
+    }
+  }
+
+  Future<void> _saveProfileContactDetails() async {
+    if (_profileBloc.profileContacts['mobileNumber'] == null) {
+      _showErrorSnackBar(
+          content: 'Please enter your contact information to continue!');
+      return;
+    }
+
+    final bool _isUploaded = await _profileBloc.saveProfileContacts();
+
+    if (_isUploaded) {
+      _showMessageSnackBar(
+          content: 'Profile contact information saved sucessfully',
           icon: Icons.check,
           isError: false);
     } else {
@@ -284,8 +306,8 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
         ProfileImageForm(),
         ProfileBioForm(),
         ProfileBusinessForm(),
-        ProfileBusinessForm(),
-        // ProfileContactForm(),
+        ProfileContactForm(),
+        Container(),
         // ProfileLocationForm(),
       ],
     );
@@ -297,8 +319,6 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
         body: Builder(
           builder: (BuildContext context) {
             _context = context;
-
-            // _getProfileWizardProgressIndex(profileBloc: _profileBloc);
 
             return Stack(
               children: <Widget>[

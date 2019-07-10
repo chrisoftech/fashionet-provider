@@ -2,13 +2,14 @@ import 'package:fashionet_provider/blocs/blocs.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class ProfileBusinessForm extends StatefulWidget {
+class ProfileContactForm extends StatefulWidget {
   @override
-  _ProfileBusinessFormState createState() => _ProfileBusinessFormState();
+  _ProfileContactFormState createState() => _ProfileContactFormState();
 }
 
-class _ProfileBusinessFormState extends State<ProfileBusinessForm> {
+class _ProfileContactFormState extends State<ProfileContactForm> {
   ProfileBloc _profileBloc;
+  TextEditingController _authPhoneNumberController = TextEditingController();
 
   Widget _buildTitleImage() {
     return Align(
@@ -16,7 +17,6 @@ class _ProfileBusinessFormState extends State<ProfileBusinessForm> {
       child: Container(
         height: 100.0,
         width: 100.0,
-        // color: Colors.grey,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: Theme.of(context).primaryColor,
@@ -32,7 +32,7 @@ class _ProfileBusinessFormState extends State<ProfileBusinessForm> {
     return Column(
       children: <Widget>[
         Text(
-          'Christian,',
+          'A Little More,',
           style: TextStyle(
             fontSize: 20.0,
             fontWeight: FontWeight.w900,
@@ -43,13 +43,15 @@ class _ProfileBusinessFormState extends State<ProfileBusinessForm> {
           children: <Widget>[
             SizedBox(width: 10.0),
             Text(
-              'Please we will required your business information!',
+              'Please complete your contact information!',
               style: TextStyle(),
             ),
           ],
         ),
-        Divider(color: Colors.grey),
-        SizedBox(height: 10.0),
+        Divider(
+          color: Colors.grey,
+        ),
+        SizedBox(height: 15.0),
       ],
     );
   }
@@ -75,39 +77,36 @@ class _ProfileBusinessFormState extends State<ProfileBusinessForm> {
     }
   }
 
-  Widget _buildBusinessFormFields() {
+  Widget _buildContactFormFields() {
     return Column(
       children: <Widget>[
-        Row(
-          children: <Widget>[
-            Expanded(
-              child: TextField(
-                style: TextStyle(color: Colors.black87, fontSize: 20.0),
-                decoration: InputDecoration(
-                  hintText: 'Enter Business Name',
-                  prefixIcon: Icon(Icons.store),
-                ),
-                onChanged: (String value) {
-                  _profileBloc.profileBusiness['businessName'] = value;
-                },
-              ),
-            ),
-            SizedBox(width: 20.0),
-          ],
+        TextField(
+          enabled: false,
+          keyboardType: TextInputType.number,
+          style: TextStyle(color: Colors.black87, fontSize: 20.0),
+          controller: _authPhoneNumberController,
+          decoration: InputDecoration(
+            hintText: 'Enter Mobile Number',
+            prefixIcon: Icon(Icons.phone_android),
+          ),
+          // onChanged: (String value) {
+          //   print('Mobile Number $value');
+          //   _profileBloc.profileContacts['mobileNumber'] = value;
+          // },
         ),
         SizedBox(height: 20.0),
         Row(
           children: <Widget>[
             Expanded(
               child: TextField(
-                keyboardType: TextInputType.multiline,
+                keyboardType: TextInputType.phone,
                 style: TextStyle(color: Colors.black87, fontSize: 20.0),
                 decoration: InputDecoration(
-                  hintText: 'Enter Business Description',
-                  prefixIcon: Icon(Icons.details),
+                  hintText: 'Enter Other Number (Optional)',
+                  prefixIcon: Icon(Icons.phone),
                 ),
                 onChanged: (String value) {
-                  _profileBloc.profileBusiness['businessDescription'] = value;
+                  _profileBloc.profileContacts['otherNumber'] = value;
                 },
               ),
             ),
@@ -119,7 +118,7 @@ class _ProfileBusinessFormState extends State<ProfileBusinessForm> {
     );
   }
 
-  Widget _buildBusinessFormCard() {
+  Widget _buildContactFormCard() {
     return Positioned(
       left: 0.0,
       right: 0.0,
@@ -132,7 +131,7 @@ class _ProfileBusinessFormState extends State<ProfileBusinessForm> {
             child: Column(
               children: <Widget>[
                 _buildFormCardTitle(),
-                _buildBusinessFormFields(),
+                _buildContactFormFields()
               ],
             ),
           ),
@@ -144,7 +143,7 @@ class _ProfileBusinessFormState extends State<ProfileBusinessForm> {
   Widget _buildFormBodyStack() {
     return Stack(
       children: <Widget>[
-        _buildBusinessFormCard(),
+        _buildContactFormCard(),
         _buildTitleImage(),
       ],
     );
@@ -152,7 +151,16 @@ class _ProfileBusinessFormState extends State<ProfileBusinessForm> {
 
   @override
   Widget build(BuildContext context) {
+    final AuthBloc _authBloc = Provider.of<AuthBloc>(context);
+
     _profileBloc = Provider.of<ProfileBloc>(context);
+    _authBloc.getUserPhoneNumber.then((String authPhoneNumber) {
+      setState(() {
+        _authPhoneNumberController.text = authPhoneNumber;
+        _profileBloc.profileContacts['mobileNumber'] =
+            _authPhoneNumberController.text;
+      });
+    });
 
     return Container(
       child: Center(

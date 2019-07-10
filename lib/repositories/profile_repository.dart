@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fashionet_provider/models/models.dart';
 import 'package:meta/meta.dart';
 
 class ProfileRepository {
@@ -28,7 +27,15 @@ class ProfileRepository {
       {@required String userId, @required  Map<String, String> profileBusiness}) {
     return _profileCollection.document(userId).setData({
       'businessName': profileBusiness['businessName'],
-      'businessDetails': profileBusiness['businessDetails'],
+      'businessDescription': profileBusiness['businessDescription'],
+    }, merge: true);
+  }
+
+  Future<void> saveProfileContacts(
+      {@required String userId, @required  Map<String, String> profileContacts}) {
+    return _profileCollection.document(userId).setData({
+      'mobileNumber': profileContacts['mobileNumber'],
+      'otherNumber': profileContacts['otherNumber'],
     }, merge: true);
   }
 }
