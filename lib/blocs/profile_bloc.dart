@@ -14,6 +14,10 @@ class ProfileBloc with ChangeNotifier {
 
   Asset _profileImage;
   String _profileFullname;
+  Map<String, String> _profileBusiness = {
+    'businessName': null,
+    'businessDetails': null,
+  };
 
   ProfileState _profileState = ProfileState.Default;
 
@@ -22,6 +26,7 @@ class ProfileBloc with ChangeNotifier {
         _imageRepository = ImageRepository(),
         _authBloc = AuthBloc.instance();
 
+  // getters
   Future<bool> get hasProfile async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getBool(HAS_PROFILE) != null && prefs.getBool(HAS_PROFILE)
@@ -29,9 +34,9 @@ class ProfileBloc with ChangeNotifier {
         : false;
   }
 
-  // getters
   Asset get profileImage => _profileImage;
   String get profileFullname => _profileFullname;
+  Map<String, String> get profileBusiness => _profileBusiness;
 
   ProfileState get profileState => _profileState;
 
@@ -50,6 +55,11 @@ class ProfileBloc with ChangeNotifier {
 
   void setProfileFullname({@required String fullname}) {
     _profileFullname = fullname;
+    notifyListeners();
+  }
+
+  void setProfileBusiness({@required Map<String, String> profileBusiness}) {
+    _profileBusiness = profileBusiness;
     notifyListeners();
   }
 
@@ -76,7 +86,7 @@ class ProfileBloc with ChangeNotifier {
       await Future.delayed(Duration(seconds: 5));
 
       // saves next profile-wizard-page-index for progress
-      _persistProfileFormWizardProgress(nextWizardIndex: 1);
+      await _persistProfileFormWizardProgress(nextWizardIndex: 1);
 
       _profileState = ProfileState.Success;
       notifyListeners();
@@ -102,10 +112,38 @@ class ProfileBloc with ChangeNotifier {
       await Future.delayed(Duration(seconds: 5));
 
       // saves next profile-wizard-page-index for progress
-      _persistProfileFormWizardProgress(nextWizardIndex: 2);
+      await _persistProfileFormWizardProgress(nextWizardIndex: 2);
 
       _profileState = ProfileState.Success;
       notifyListeners();
+      return true;
+    } catch (e) {
+      _profileState = ProfileState.Failure;
+      notifyListeners();
+
+      return false;
+    }
+  }
+
+  Future<bool> saveProfileBusiness() async {
+    try {
+      _profileState = ProfileState.Loading;
+      notifyListeners();
+
+      // final String _userId = await _authBloc.getUser;
+      // _profileRepository.saveProfileBusiness(
+      //     userId: _userId, profileBusiness: profileBusiness);
+      print('Business Name ${_profileBusiness['businessName']}');
+      print('Business Details ${_profileBusiness['businessDetails']}');
+
+      await Future.delayed(Duration(seconds: 3));
+
+      // saves next profile-wizard-page-index for progress
+      _persistProfileFormWizardProgress(nextWizardIndex: 3);
+
+      _profileState = ProfileState.Success;
+      notifyListeners();
+
       return true;
     } catch (e) {
       _profileState = ProfileState.Failure;

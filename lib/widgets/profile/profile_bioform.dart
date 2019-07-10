@@ -97,10 +97,9 @@ class _ProfileBioFormState extends State<ProfileBioForm> {
     // final ProfileBloc _profileBloc = Provider.of<ProfileBloc>(context);
     _profileBloc = Provider.of<ProfileBloc>(context);
 
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
-      child: Container(
-        child: Center(
+    return Container(
+      child: Center(
+        child: SingleChildScrollView(
           child: Container(
             height: 250.0,
             width: 400.0,

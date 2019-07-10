@@ -40,6 +40,7 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
     _profileBloc.profileFormWizardProgressIndex.then((int _wizardPageIndex) {
       setState(() {
         _pageController.jumpToPage(_wizardPageIndex);
+        // _pageController.jumpToPage(_wizardPageIndex - 1);
       });
     });
   }
@@ -62,7 +63,9 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
       await _uploadProfileImage();
     } else if (_currentWizardPageIndex == 1) {
       await _saveProfileFullname();
-    } else if (_currentWizardPageIndex > 1) {
+    } else if (_currentWizardPageIndex == 2) {
+      await _saveProfileBusinessDetails();
+    } else if (_currentWizardPageIndex > 3) {
       authBloc.signout();
     } else if (_currentWizardPageIndex == 4) {
       Navigator.of(context).pushReplacementNamed('/home');
@@ -99,6 +102,29 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
     }
 
     final bool _isUploaded = await _profileBloc.saveProfileFullname();
+
+    if (_isUploaded) {
+      _showMessageSnackBar(
+          content: 'Profile fullname saved sucessfully',
+          icon: Icons.check,
+          isError: false);
+    } else {
+      _showMessageSnackBar(
+          content: 'Sorry! Something went wrong! Try again',
+          icon: Icons.error_outline,
+          isError: true);
+    }
+  }
+
+  Future<void> _saveProfileBusinessDetails() async {
+    // if (_profileBloc.profileBusiness['businessName'] == null ||
+    //     _profileBloc.profileBusiness['businessDetails'] == null) {
+    //   _showErrorSnackBar(
+    //       content: 'Please enter your business information to continue!');
+    //   return;
+    // }
+
+    final bool _isUploaded = await _profileBloc.saveProfileBusiness();
 
     if (_isUploaded) {
       _showMessageSnackBar(
@@ -257,29 +283,32 @@ class _ProfileWizardFormState extends State<ProfileWizardForm> {
       children: <Widget>[
         ProfileImageForm(),
         ProfileBioForm(),
-        ProfileBioForm(),
-        // ProfileBusinessForm(),
+        ProfileBusinessForm(),
+        ProfileBusinessForm(),
         // ProfileContactForm(),
         // ProfileLocationForm(),
       ],
     );
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).primaryColor,
-      body: Builder(
-        builder: (BuildContext context) {
-          _context = context;
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
+      child: Scaffold(
+        backgroundColor: Theme.of(context).primaryColor,
+        body: Builder(
+          builder: (BuildContext context) {
+            _context = context;
 
-          // _getProfileWizardProgressIndex(profileBloc: _profileBloc);
+            // _getProfileWizardProgressIndex(profileBloc: _profileBloc);
 
-          return Stack(
-            children: <Widget>[
-              _pageView,
-              _buildFormWizardIndicator(),
-              _buildFormWizardActions(authBloc: _authBloc)
-            ],
-          );
-        },
+            return Stack(
+              children: <Widget>[
+                _pageView,
+                _buildFormWizardIndicator(),
+                _buildFormWizardActions(authBloc: _authBloc)
+              ],
+            );
+          },
+        ),
       ),
     );
   }
