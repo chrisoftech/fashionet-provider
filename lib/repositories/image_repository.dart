@@ -4,7 +4,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:meta/meta.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
-import 'package:uuid/uuid.dart';
+// import 'package:uuid/uuid.dart';
 
 class ImageRepository {
   final FirebaseStorage _firebaseStorage;
@@ -22,10 +22,9 @@ class ImageRepository {
 
   Future<String> saveProfileImage(
       {@required String userId, @required Asset asset}) async {
-    final uuid = Uuid();
 
     final String fileLocation = 'profile';
-    final String fileName = '$userId/$fileLocation/${uuid.v1()}';
+    final String fileName = '$userId/$fileLocation/$userId';
 
     ByteData byteData = await asset.requestOriginal();
     List<int> imageData = byteData.buffer.asUint8List();

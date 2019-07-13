@@ -1,3 +1,4 @@
+import 'package:events2/events2.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/widgets.dart';
 // import 'package:flutter/cupertino.dart';
@@ -30,16 +31,16 @@ class AuthBloc with ChangeNotifier {
   AuthLevel get authLevel => _authLevel;
 
   Future<bool> get isSignedIn async {
-    final FirebaseUser currentUser = await _firebaseAuth.currentUser();
-    return currentUser != null ? true : false;
+    _firebaseUser = await _firebaseAuth.currentUser();
+    return _firebaseUser != null ? true : false;
   }
 
   Future<String> get getUser async {
-    return (await _firebaseAuth.currentUser()).uid;
+    return await isSignedIn ? _firebaseUser.uid : null;
   }
 
   Future<String> get getUserPhoneNumber async {
-    return (await _firebaseAuth.currentUser()).phoneNumber;
+    return await isSignedIn ? _firebaseUser.phoneNumber : null;
   }
 
   // setters
@@ -66,11 +67,16 @@ class AuthBloc with ChangeNotifier {
       }
 
       final PhoneVerificationCompleted verificationCompleted =
-          (AuthCredential phoneAuthCredential) {
-        _firebaseAuth.signInWithCredential(phoneAuthCredential);
+          (AuthCredential phoneAuthCredential) async {
+        FirebaseUser _firebaseUser =
+            await _firebaseAuth.signInWithCredential(phoneAuthCredential);
 
+        // signin is credential still exists
+        await _onAuthStateChanged(_firebaseUser);
+
+        // _authState = AuthState.Authenticated;
+        // notifyListeners();
         print('Received phone auth credential: $phoneAuthCredential');
-        throw Exception('Invalid phone number!');
       };
 
       final PhoneVerificationFailed verificationFailed =
@@ -109,6 +115,7 @@ class AuthBloc with ChangeNotifier {
       _verificationState = VerificationState.Success;
       _authLevel = AuthLevel.Authentication;
       notifyListeners();
+
       return true;
     } catch (e) {
       _verificationState = VerificationState.Failure;

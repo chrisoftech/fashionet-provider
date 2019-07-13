@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fashionet_provider/blocs/blocs.dart';
 import 'package:fashionet_provider/consts/const.dart';
 import 'package:fashionet_provider/repositories/repositories.dart';
@@ -13,16 +14,6 @@ class ProfileBloc with ChangeNotifier {
   final AuthBloc _authBloc;
 
   Asset _profileImage;
-  String _profileFullname;
-  Map<String, String> _profileBusiness = {
-    'businessName': null,
-    'businessDescription': null,
-  };
-
-  Map<String, String> _profileContacts = {
-    'mobileNumber': null,
-    'otherNumber': null,
-  };
 
   ProfileState _profileState = ProfileState.Default;
 
@@ -33,25 +24,19 @@ class ProfileBloc with ChangeNotifier {
 
   // getters
   Future<bool> get hasProfile async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(HAS_PROFILE) != null && prefs.getBool(HAS_PROFILE)
-        ? true
-        : false;
+    final String _userId = await _authBloc.getUser;
+    final DocumentSnapshot _snapshot =
+        await _profileRepository.hasProfile(userId: _userId);
+
+    final bool _hasProfile =
+        _snapshot.exists ? _snapshot.data['hasProfile'] : false;
+
+    return _hasProfile == null || !_hasProfile ? false : true;
   }
 
   Asset get profileImage => _profileImage;
-  String get profileFullname => _profileFullname;
-  Map<String, String> get profileBusiness => _profileBusiness;
-  Map<String, String> get profileContacts => _profileContacts;
 
   ProfileState get profileState => _profileState;
-
-  Future<int> get profileFormWizardProgressIndex async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getInt(PROFILE_WIZARD_INDEX) != null
-        ? prefs.getInt(PROFILE_WIZARD_INDEX)
-        : 0;
-  }
 
   // setters
   void setProfileImage({@required Asset profileImage}) {
@@ -59,45 +44,36 @@ class ProfileBloc with ChangeNotifier {
     notifyListeners();
   }
 
-  void setProfileFullname({@required String fullname}) {
-    _profileFullname = fullname;
-    notifyListeners();
-  }
-
-  void setProfileBusiness({@required Map<String, String> profileBusiness}) {
-    _profileBusiness = profileBusiness;
-    notifyListeners();
-  }
-
-  void setProfileContacts({@required Map<String, String> profileContacts}) {
-    _profileContacts = profileContacts;
-    notifyListeners();
-  }
-
-  Future<void> _persistProfileFormWizardProgress(
-      {@required int nextWizardIndex}) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(PROFILE_WIZARD_INDEX, nextWizardIndex);
-    return;
-  }
-
-  Future<bool> uploadProfileImage() async {
+  Future<bool> createProfile(
+      {@required String firstName,
+      @required String lastName,
+      @required String businessName,
+      @required String businessDescription,
+      @required String phoneNumber,
+      String otherPhoneNumber,
+      @required String businessLocation}) async {
     try {
       _profileState = ProfileState.Loading;
       notifyListeners();
 
-      // final String _userId = await _authBloc.getUser;
+      final String _userId = await _authBloc.getUser;
 
-      // final String _profileImageUrl = await _imageRepository.saveProfileImage(
-      //     userId: _userId, asset: profileImage);
+      final String _profileImageUrl = await _imageRepository.saveProfileImage(
+          userId: _userId, asset: profileImage);
 
-      // await _profileRepository.saveProfileImageUrl(
-      //     userId: _userId, profileImageUrl: _profileImageUrl);
+      await _profileRepository.createProfile(
+        userId: _userId,
+        firstName: firstName,
+        lastName: lastName,
+        businessName: businessName,
+        businessDescription: businessDescription,
+        phoneNumber: phoneNumber,
+        otherPhoneNumber: otherPhoneNumber,
+        businessLocation: businessLocation,
+        profileImageUrl: _profileImageUrl,
+      );
 
-      await Future.delayed(Duration(seconds: 5));
-
-      // saves next profile-wizard-page-index for progress
-      await _persistProfileFormWizardProgress(nextWizardIndex: 1);
+      // await Future.delayed(Duration(seconds: 5));
 
       _profileState = ProfileState.Success;
       notifyListeners();
@@ -108,82 +84,6 @@ class ProfileBloc with ChangeNotifier {
 
       _profileState = ProfileState.Failure;
       notifyListeners();
-      return false;
-    }
-  }
-
-  Future<bool> saveProfileFullname() async {
-    try {
-      _profileState = ProfileState.Loading;
-      notifyListeners();
-
-      // final String _userId = await _authBloc.getUser;
-      // await _profileRepository.saveProfileFullname(
-      //     userId: _userId, fullname: profileFullname);
-      await Future.delayed(Duration(seconds: 5));
-
-      // saves next profile-wizard-page-index for progress
-      await _persistProfileFormWizardProgress(nextWizardIndex: 2);
-
-      _profileState = ProfileState.Success;
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _profileState = ProfileState.Failure;
-      notifyListeners();
-
-      return false;
-    }
-  }
-
-  Future<bool> saveProfileBusiness() async {
-    try {
-      _profileState = ProfileState.Loading;
-      notifyListeners();
-
-      final String _userId = await _authBloc.getUser;
-      _profileRepository.saveProfileBusiness(
-          userId: _userId, profileBusiness: profileBusiness);
-
-      // await Future.delayed(Duration(seconds: 3));
-
-      // saves next profile-wizard-page-index for progress
-      _persistProfileFormWizardProgress(nextWizardIndex: 3);
-
-      _profileState = ProfileState.Success;
-      notifyListeners();
-
-      return true;
-    } catch (e) {
-      _profileState = ProfileState.Failure;
-      notifyListeners();
-
-      return false;
-    }
-  }
-
-  Future<bool> saveProfileContacts() async {
-    try {
-      _profileState = ProfileState.Loading;
-      notifyListeners();
-
-      final String _userId = await _authBloc.getUser;
-      _profileRepository.saveProfileContacts(
-          userId: _userId, profileContacts: profileContacts);
-
-      // await Future.delayed(Duration(seconds: 3));
-
-      // saves next profile-wizard-page-index for progress
-      _persistProfileFormWizardProgress(nextWizardIndex: 4);
-
-      _profileState = ProfileState.Success;
-      notifyListeners();
-
-      return true;
-    } catch (e) {
-      _profileState = ProfileState.Failure;
-      notifyListeners();
-
       return false;
     }
   }

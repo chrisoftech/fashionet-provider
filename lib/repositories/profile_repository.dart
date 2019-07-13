@@ -4,38 +4,39 @@ import 'package:meta/meta.dart';
 class ProfileRepository {
   final Firestore _firestore;
   final CollectionReference _profileCollection;
+  final FieldValue _firestoreTimestamp;
 
   ProfileRepository()
       : _firestore = Firestore.instance,
-        _profileCollection = Firestore.instance.collection('profile');
+        _profileCollection = Firestore.instance.collection('profile'),
+        _firestoreTimestamp = FieldValue.serverTimestamp();
 
-  Future<void> saveProfileImageUrl(
-      {@required String userId, @required String profileImageUrl}) async {
-    return await _profileCollection.document(userId).setData({
+  Future<DocumentSnapshot> hasProfile({@required String userId}) async {
+    return _profileCollection.document(userId).get();
+  }
+
+  Future<void> createProfile(
+      {@required String userId,
+      @required String firstName,
+      @required String lastName,
+      @required String businessName,
+      @required String businessDescription,
+      @required String phoneNumber,
+      String otherPhoneNumber,
+      @required String businessLocation,
+      @required String profileImageUrl}) {
+    return _profileCollection.document(userId).setData({
+      'firstName': firstName,
+      'lastName': lastName,
+      'businessName': businessName,
+      'businessDescription': businessDescription,
+      'phoneNumber': phoneNumber,
+      'otherPhoneNumber': otherPhoneNumber,
+      'businessLocation': businessLocation,
       'profileImageUrl': profileImageUrl,
-    }, merge: true);
-  }
-
-  Future<void> saveProfileFullname(
-      {@required String userId, @required String fullname}) {
-    return _profileCollection.document(userId).setData({
-      'fullname': fullname,
-    }, merge: true);
-  }
-
-  Future<void> saveProfileBusiness(
-      {@required String userId, @required  Map<String, String> profileBusiness}) {
-    return _profileCollection.document(userId).setData({
-      'businessName': profileBusiness['businessName'],
-      'businessDescription': profileBusiness['businessDescription'],
-    }, merge: true);
-  }
-
-  Future<void> saveProfileContacts(
-      {@required String userId, @required  Map<String, String> profileContacts}) {
-    return _profileCollection.document(userId).setData({
-      'mobileNumber': profileContacts['mobileNumber'],
-      'otherNumber': profileContacts['otherNumber'],
+      'hasProfile': true,
+      'created': _firestoreTimestamp,
+      'lastUpdate': _firestoreTimestamp,
     }, merge: true);
   }
 }
