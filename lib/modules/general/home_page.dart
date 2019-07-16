@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -116,13 +117,40 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  FloatingActionButton _buildFloatingActionButton(BuildContext context) {
-    return FloatingActionButton(
-      elevation: 7.0,
-      highlightElevation: 10.0,
-      backgroundColor: Theme.of(context).primaryColor,
-      child: Icon(Icons.add_a_photo, size: 32.0, color: Colors.white),
-      onPressed: () => Navigator.of(context).pushNamed('/post-form'),
+  Widget _floatingCollapsed() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 0.0),
+      decoration: BoxDecoration(
+        color: Theme.of(context).primaryColor,
+        // color: Colors.blueGrey,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24.0), topRight: Radius.circular(24.0)),
+      ),
+      child: Center(
+        child: Text(
+          'Slide up to post item',
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  Widget _floatingPanel() {
+    return Container(
+      margin: const EdgeInsets.only(top: 24.0, right: 24.0, left: 24.0),
+      decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(24.0), topRight: Radius.circular(24.0)),
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 20.0,
+              color: Colors.grey,
+            ),
+          ]),
+      child: Center(
+        child: Text("This is the SlidingUpPanel when open"),
+      ),
     );
   }
 
@@ -157,15 +185,21 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
-      floatingActionButton: _buildFloatingActionButton(context),
+      // floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+      // floatingActionButton: _buildFloatingActionButton(context),
       bottomNavigationBar: BottomNavBar(
         activeIndex: _activePageIndex,
         onActiveIndexChange: (int index) {
           setState(() => _pageController.jumpToPage(index));
         },
       ),
-      body: _pageView,
+      body: SlidingUpPanel(
+        minHeight: 50.0,
+        renderPanelSheet: false,
+        panel: _floatingPanel(),
+        collapsed: _floatingCollapsed(),
+        body: _pageView,
+      ),
     );
   }
 }

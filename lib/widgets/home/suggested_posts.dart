@@ -139,6 +139,7 @@ class _SuggestedPostsState extends State<SuggestedPosts> {
                 Expanded(
                   child: ListView.builder(
                     itemCount: 9,
+                    padding: EdgeInsets.only(bottom: 170.0),
                     itemBuilder: (BuildContext context, int index) {
                       final int postIndex = index == 0 ? 9 : index;
 

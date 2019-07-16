@@ -1,4 +1,3 @@
-
 import 'package:fashionet_provider/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 
@@ -9,6 +8,9 @@ class FeedPage extends StatelessWidget {
       body: CustomScrollView(
         slivers: <Widget>[
           PostsFeed(),
+          SliverToBoxAdapter(
+            child: SizedBox(height: 160.0),
+          )
         ],
       ),
     );

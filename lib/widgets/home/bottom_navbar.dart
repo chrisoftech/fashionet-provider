@@ -45,7 +45,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
               child: Container(
                 width: _deviceWidth,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     _buildBottomNavBarItem(
@@ -60,9 +60,9 @@ class _BottomNavBarState extends State<BottomNavBar> {
                       index: 2,
                       icon: Icons.bookmark_border,
                     ),
-                    Container(
-                      width: _deviceWidth / 6,
-                    )
+                    // Container(
+                    //   width: _deviceWidth / 6,
+                    // )
                   ],
                 ),
               ),
