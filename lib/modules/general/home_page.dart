@@ -148,8 +148,9 @@ class _HomePageState extends State<HomePage> {
               color: Colors.grey,
             ),
           ]),
-      child: Center(
-        child: Text("This is the SlidingUpPanel when open"),
+      child: Container(
+        margin: EdgeInsets.only(top: 25.0),
+        child:  PostForm(),
       ),
     );
   }
@@ -176,6 +177,7 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       key: _scaffoldKey,
+      resizeToAvoidBottomInset: false,
       appBar: _buildAppBar(context),
       drawer: Drawer(
         child: Center(
@@ -185,8 +187,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      // floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
-      // floatingActionButton: _buildFloatingActionButton(context),
       bottomNavigationBar: BottomNavBar(
         activeIndex: _activePageIndex,
         onActiveIndexChange: (int index) {
