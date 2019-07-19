@@ -150,7 +150,7 @@ class _HomePageState extends State<HomePage> {
           ]),
       child: Container(
         margin: EdgeInsets.only(top: 25.0),
-        child:  PostForm(),
+        child: PostForm(scaffoldKey: _scaffoldKey),
       ),
     );
   }

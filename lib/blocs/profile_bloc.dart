@@ -1,10 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fashionet_provider/blocs/blocs.dart';
-import 'package:fashionet_provider/consts/const.dart';
 import 'package:fashionet_provider/repositories/repositories.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 enum ProfileState { Default, Loading, Success, Failure }
 

@@ -2,13 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:meta/meta.dart';
 
 class ProfileRepository {
-  final Firestore _firestore;
+  // final Firestore _firestore;
   final CollectionReference _profileCollection;
   final FieldValue _firestoreTimestamp;
 
   ProfileRepository()
-      : _firestore = Firestore.instance,
-        _profileCollection = Firestore.instance.collection('profile'),
+      : _profileCollection = Firestore.instance.collection('profile'),
         _firestoreTimestamp = FieldValue.serverTimestamp();
 
   Future<DocumentSnapshot> hasProfile({@required String userId}) async {

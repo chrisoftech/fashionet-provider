@@ -1,11 +1,15 @@
 import 'package:fashionet_provider/blocs/blocs.dart';
 import 'package:fashionet_provider/modules/modules.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'widgets/widgets.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
+      .then((_) => runApp(MyApp()));
+}
 
 class MyApp extends StatelessWidget {
   @override
@@ -13,7 +17,9 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<AuthBloc>.value(value: AuthBloc.instance()),
-        ChangeNotifierProvider<ProfileBloc>.value(value: ProfileBloc.instance())
+        ChangeNotifierProvider<ProfileBloc>.value(
+            value: ProfileBloc.instance()),
+        ChangeNotifierProvider<PostBloc>.value(value: PostBloc.instance())
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -33,7 +39,6 @@ class MyApp extends StatelessWidget {
 }
 
 class DynamicInitialPage extends StatefulWidget {
-  
   @override
   _DynamicInitialPageState createState() => _DynamicInitialPageState();
 }
