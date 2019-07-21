@@ -1,6 +1,8 @@
 import 'package:fashionet_provider/blocs/blocs.dart';
+import 'package:fashionet_provider/models/models.dart';
 import 'package:fashionet_provider/modules/modules.dart';
 import 'package:fashionet_provider/widgets/widgets.dart';
+import 'package:fashionet_provider/consts/const.dart' as consts;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
@@ -57,6 +59,36 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  void _menuChoiceAction(String menuChoice) {
+    print(menuChoice);
+    // showModalBottomSheet(context: context, builder: (BuildContext context) {
+    //   return Container(
+    //     color: Colors.teal,
+    //   );
+    // });
+  }
+
+  Widget _buildAppBarMenuPoopUp() {
+    return PopupMenuButton<String>(
+        onSelected: _menuChoiceAction,
+        icon: Icon(Icons.more_vert, size: 30.0, color: _primaryColor),
+        itemBuilder: (BuildContext context) {
+          return consts.menuOptions.map((MenuOption option) {
+            return PopupMenuItem(
+              value: option.menuOption,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  // Icon(option.icon),
+                  // SizedBox(width: 10.0),
+                  Text(option.menuOption),
+                ],
+              ),
+            );
+          }).toList();
+        });
+  }
+
   AppBar _buildAppBar(BuildContext context) {
     return AppBar(
       elevation: 0.0,
@@ -82,8 +114,7 @@ class _HomePageState extends State<HomePage> {
             context: context, index: 0, icon: Icons.search),
         _buildAppbarActionWidgets(
             context: context, index: 1, icon: Icons.person_outline),
-        _buildAppbarActionWidgets(
-            context: context, index: 2, icon: Icons.more_vert),
+        _buildAppBarMenuPoopUp(),
       ],
     );
   }
