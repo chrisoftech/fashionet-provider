@@ -36,6 +36,14 @@ class _HomePageState extends State<HomePage> {
     colors: <Color>[Colors.orange, Colors.indigo],
   ).createShader(new Rect.fromLTWH(0.0, 0.0, 250.0, 70.0));
 
+  void _openCategoryModal() {
+    showModalBottomSheet(
+        context: context,
+        builder: (BuildContext context) {
+          return Categories();
+        });
+  }
+
   Widget _buildAppbarActionWidgets(
       {@required BuildContext context,
       @required int index,
@@ -61,14 +69,13 @@ class _HomePageState extends State<HomePage> {
 
   void _menuChoiceAction(String menuChoice) {
     print(menuChoice);
-    // showModalBottomSheet(context: context, builder: (BuildContext context) {
-    //   return Container(
-    //     color: Colors.teal,
-    //   );
-    // });
+    if(menuChoice == 'Categories') {
+      _openCategoryModal();
+      return;
+    }
   }
 
-  Widget _buildAppBarMenuPoopUp() {
+  Widget _buildAppBarMenuPopUp() {
     return PopupMenuButton<String>(
         onSelected: _menuChoiceAction,
         icon: Icon(Icons.more_vert, size: 30.0, color: _primaryColor),
@@ -114,7 +121,7 @@ class _HomePageState extends State<HomePage> {
             context: context, index: 0, icon: Icons.search),
         _buildAppbarActionWidgets(
             context: context, index: 1, icon: Icons.person_outline),
-        _buildAppBarMenuPoopUp(),
+        _buildAppBarMenuPopUp(),
       ],
     );
   }

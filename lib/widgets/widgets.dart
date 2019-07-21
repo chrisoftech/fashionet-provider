@@ -1,6 +1,8 @@
 export 'authentication/login_form.dart';
 export 'authentication/verification_form.dart';
 
+export 'category/categories.dart';
+
 export 'feed/post_feed.dart';
 
 export 'home/bottom_navbar.dart';
