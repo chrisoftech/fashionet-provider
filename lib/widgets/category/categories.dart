@@ -7,13 +7,11 @@ class Categories extends StatefulWidget {
 }
 
 class _CategoriesState extends State<Categories> {
-  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
   void _openCategoryFormDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return CategoryForm(scaffoldKey: _scaffoldKey);
+        return CategoryForm();
       },
     );
   }

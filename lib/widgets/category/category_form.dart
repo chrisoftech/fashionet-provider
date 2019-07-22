@@ -1,11 +1,11 @@
+import 'package:fashionet_provider/blocs/blocs.dart';
 import 'package:flutter/material.dart';
 import 'package:keyboard_avoider/keyboard_avoider.dart';
+import 'package:multi_image_picker/multi_image_picker.dart';
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 class CategoryForm extends StatefulWidget {
-  final GlobalKey<ScaffoldState> scaffoldKey;
-
-  const CategoryForm({Key key, @required this.scaffoldKey}) : super(key: key);
-
   @override
   _CategoryFormState createState() => _CategoryFormState();
 }
@@ -16,17 +16,66 @@ class _CategoryFormState extends State<CategoryForm> {
   final _descriptionController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
-  GlobalKey<ScaffoldState> get _scaffoldKey => widget.scaffoldKey;
+  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  //  Widget _buildPostCardBackgroundImage() {
-  //   return Stack(
-  //     alignment: Alignment.center,
-  //     children: <Widget>[
-  //       Container(child: _buildPostImageCarousel()),
-  //       _images.length > 1 ? _buildPostImageCarouselIndicator() : Container(),
-  //     ],
-  //   );
-  // }
+  CategoryBloc _categoryBloc;
+
+  List<Asset> _images = List<Asset>();
+  String _error = 'No Error Dectected';
+
+  bool get _isSaveCategoryFABEnabled {
+    return _categoryBloc.categoryState == CategoryState.Loading ? false : true;
+  }
+
+  void _hideKeyPad() {
+    FocusScope.of(context).requestFocus(FocusNode());
+    // _scaffoldKey.currentState..hideCurrentSnackBar();
+  }
+
+  Future<void> _loadAssets() async {
+    List<Asset> resultList = List<Asset>();
+    String error = 'No Error Dectected';
+
+    // clear existing selected profile image
+    // profileBloc.setProfileImage(profileImage: null);
+
+    try {
+      resultList = await MultiImagePicker.pickImages(
+          maxImages: 1,
+          enableCamera: true,
+          selectedAssets: _images,
+          cupertinoOptions: CupertinoOptions(takePhotoIcon: "chat"),
+          materialOptions: MaterialOptions(
+            actionBarColor: "#abcdef",
+            actionBarTitle: "Category Image",
+            allViewTitle: "All Photos",
+            selectCircleStrokeColor: "#000000",
+          ));
+    } on PlatformException catch (e) {
+      error = e.message;
+      print(e.message);
+    }
+
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) return;
+
+    setState(() {
+      _images = resultList;
+      // if (_images.isNotEmpty)
+      // _profileBloc.setProfileImage(profileImage: _images[0]);
+      _error = error;
+    });
+  }
+
+  Widget _buildPostCardBackgroundImage() {
+    return AssetThumb(
+      asset: _images[0],
+      width: 300,
+      height: 300,
+    );
+  }
 
   Widget _buildFlexibleSpaceBackground() {
     final double _deviceWidth = MediaQuery.of(context).size.width;
@@ -46,8 +95,8 @@ class _CategoryFormState extends State<CategoryForm> {
                 children: <Widget>[
                   InkWell(
                     borderRadius: BorderRadius.circular(50.0),
-                    onTap: () {},
-                    // !_isSavePostFABEnabled ? null : () => _loadAssets(),
+                    onTap:
+                        !_isSaveCategoryFABEnabled ? null : () => _loadAssets(),
                     child: Container(
                       padding: EdgeInsets.all(10.0),
                       decoration: BoxDecoration(
@@ -78,24 +127,23 @@ class _CategoryFormState extends State<CategoryForm> {
               width: _deviceWidth,
               alignment: Alignment.center,
               decoration: BoxDecoration(color: Colors.black54),
-              child:
-                  // _images.isNotEmpty
-                  //     ? _buildPostCardBackgroundImage()
-                  //     :
-                  InkWell(
-                splashColor: Theme.of(context).primaryColor,
-                borderRadius: BorderRadius.circular(50.0),
-                onTap: () {},
-                // !_isSavePostFABEnabled ? null : () => _loadAssets(),
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Icon(
-                    Icons.camera_alt,
-                    size: 70.0,
-                    color: Colors.white70,
-                  ),
-                ),
-              ),
+              child: _images.isNotEmpty
+                  ? _buildPostCardBackgroundImage()
+                  : InkWell(
+                      splashColor: Theme.of(context).primaryColor,
+                      borderRadius: BorderRadius.circular(50.0),
+                      onTap: !_isSaveCategoryFABEnabled
+                          ? null
+                          : () => _loadAssets(),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Icon(
+                          Icons.camera_alt,
+                          size: 70.0,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ),
             ),
           ),
         ],
@@ -164,9 +212,81 @@ class _CategoryFormState extends State<CategoryForm> {
     );
   }
 
-  Widget _buildCustomSavePostFAB() {
-    // final double _buttonWidth =
-    //     _postBloc.postState == PostState.Loading ? 50.0 : 150.0;
+  _showMessageSnackBar(
+      {@required String content,
+      @required IconData icon,
+      @required bool isError}) {
+    if (_scaffoldKey.currentState != null) {
+      _scaffoldKey.currentState
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            duration: Duration(seconds: 4),
+            content: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(child: Text('$content')),
+                Icon(icon, color: isError ? Colors.red : Colors.green),
+              ],
+            ),
+          ),
+        );
+    }
+  }
+
+  void _resetForm() {
+    _images.clear();
+    _formKey.currentState.reset();
+
+    _titleController.clear();
+    _descriptionController.clear();
+  }
+
+  Future<void> _onUploadFABClicked() async {
+    _hideKeyPad();
+
+    if (_images.isEmpty) {
+      _showMessageSnackBar(
+          content: 'Please select post image(s) to continue!',
+          icon: Icons.error_outline,
+          isError: true);
+
+      return;
+    }
+
+    if (!_formKey.currentState.validate()) {
+      _showMessageSnackBar(
+          content: 'Please enter category details in form to continue!',
+          icon: Icons.error_outline,
+          isError: true);
+
+      return;
+    }
+
+    final bool _isCategoryCreated = await _categoryBloc.createCategory(
+      title: _titleController.text,
+      description: _descriptionController.text,
+      asset: _images[0],
+    );
+
+    if (_isCategoryCreated) {
+      _showMessageSnackBar(
+          content: 'Category is created sucessfully',
+          icon: Icons.check,
+          isError: false);
+
+      _resetForm();
+    } else {
+      _showMessageSnackBar(
+          content: 'Sorry! Something went wrong! Try again',
+          icon: Icons.error_outline,
+          isError: true);
+    }
+  }
+
+  Widget _buildCustomSaveCategoryFAB() {
+    final double _buttonWidth =
+        _categoryBloc.categoryState == CategoryState.Loading ? 50.0 : 150.0;
 
     return Align(
       alignment: Alignment.bottomCenter,
@@ -178,44 +298,43 @@ class _CategoryFormState extends State<CategoryForm> {
             color: Theme.of(context).primaryColor,
             borderRadius: BorderRadius.circular(25.0),
             child: InkWell(
-              onTap: () {},
-              // !_isSavePostFABEnabled ? null : () => _onUploadFABClicked(),
+              onTap: !_isSaveCategoryFABEnabled
+                  ? null
+                  : () => _onUploadFABClicked(),
               splashColor: Colors.black38,
               borderRadius: BorderRadius.circular(25.0),
               child: AnimatedContainer(
                 height: 50.0,
-                width: 150.0,
+                width: _buttonWidth,
                 duration: Duration(milliseconds: 150),
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(25.0),
                 ),
-                child:
-                    // _postBloc.postState == PostState.Loading
-                    //     ? CircularProgressIndicator()
-                    //     :
-                    Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Flexible(
-                      child: Text(
-                        'Upload',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20.0,
-                            fontWeight: FontWeight.bold),
+                child: _categoryBloc.categoryState == CategoryState.Loading
+                    ? CircularProgressIndicator()
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Flexible(
+                            child: Text(
+                              'Upload',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20.0,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          SizedBox(width: 5.0),
+                          Flexible(
+                            child: Icon(
+                              Icons.cloud_upload,
+                              size: 30.0,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    SizedBox(width: 5.0),
-                    Flexible(
-                      child: Icon(
-                        Icons.cloud_upload,
-                        size: 30.0,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
               ),
             ),
           ),
@@ -244,8 +363,8 @@ class _CategoryFormState extends State<CategoryForm> {
               children: <Widget>[
                 Expanded(
                   child: FlatButton(
-                    onPressed: () {},
-                    // !_isSavePostFABEnabled ? null : () => _loadAssets(),
+                    onPressed:
+                        !_isSaveCategoryFABEnabled ? null : () => _loadAssets(),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
@@ -312,14 +431,18 @@ class _CategoryFormState extends State<CategoryForm> {
             ? (_deviceWidth - _formContainerWidth)
             : 0.0;
 
-    return Material(
-      child: GestureDetector(
+    _categoryBloc = Provider.of<CategoryBloc>(context);
+
+    return Scaffold(
+      key: _scaffoldKey,
+      resizeToAvoidBottomInset: false,
+      body: GestureDetector(
         onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
         child: Stack(
           children: <Widget>[
             _buildCustomScrollView(
                 formContainerPaddingValue: _formContainerPaddingValue),
-            _buildCustomSavePostFAB(),
+            _buildCustomSaveCategoryFAB(),
           ],
         ),
       ),

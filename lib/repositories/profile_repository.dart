@@ -7,7 +7,7 @@ class ProfileRepository {
   final FieldValue _firestoreTimestamp;
 
   ProfileRepository()
-      : _profileCollection = Firestore.instance.collection('profile'),
+      : _profileCollection = Firestore.instance.collection('profiles'),
         _firestoreTimestamp = FieldValue.serverTimestamp();
 
   Future<DocumentSnapshot> hasProfile({@required String userId}) async {

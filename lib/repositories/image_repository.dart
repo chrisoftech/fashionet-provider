@@ -22,8 +22,37 @@ class ImageRepository {
 
   Future<String> saveProfileImage(
       {@required String userId, @required Asset asset}) async {
-    final String fileLocation = 'profile';
-    final String fileName = '$userId/$fileLocation/$userId';
+    final String fileName = 'profiles/$userId/$userId';
+
+    ByteData byteData = await asset.requestOriginal();
+    List<int> imageData = byteData.buffer.asUint8List();
+
+    // compress file
+    Uint8List compressedFile = await _compressFile(imageData: imageData);
+
+    StorageReference reference = _firebaseStorage.ref().child(fileName);
+    StorageUploadTask uploadTask = reference.putData(compressedFile);
+    StorageTaskSnapshot storageTaskSnapshot;
+
+    // Release the image data
+    // asset.releaseOriginal();
+
+    StorageTaskSnapshot snapshot = await uploadTask.onComplete.timeout(
+        const Duration(seconds: 60),
+        onTimeout: () =>
+            throw ('Upload could not be completed. Operation timeout'));
+
+    if (snapshot.error == null) {
+      storageTaskSnapshot = snapshot;
+      return await storageTaskSnapshot.ref.getDownloadURL();
+    } else {
+      throw ('An error occured while uploading image. Upload error');
+    }
+  }
+
+  Future<String> uploadCategoryImage({@required Asset asset}) async {
+    final uuid = Uuid();
+    final String fileName = 'categories/${uuid.v1()}';
 
     ByteData byteData = await asset.requestOriginal();
     List<int> imageData = byteData.buffer.asUint8List();
@@ -52,14 +81,6 @@ class ImageRepository {
     }
   }
 
-  Future<void> deleteImage({@required String imageUrl}) async {
-    if (imageUrl.isNotEmpty) {
-      final StorageReference reference =
-          await FirebaseStorage.instance.getReferenceFromUrl(imageUrl);
-      return reference.delete();
-    }
-  }
-
   Future<List<String>> uploadPostImages(
       {@required String fileLocation, @required List<Asset> assets}) async {
     List<String> uploadUrls = [];
@@ -74,7 +95,7 @@ class ImageRepository {
                   await _compressFile(imageData: imageData);
 
               final uuid = Uuid();
-              final fileName = '$fileLocation/${uuid.v1()}';
+              final fileName = 'posts/$fileLocation/${uuid.v1()}';
 
               StorageReference reference =
                   FirebaseStorage.instance.ref().child(fileName);
@@ -110,5 +131,13 @@ class ImageRepository {
                 throw ('Upload could not be completed. Operation timeout'));
 
     return uploadUrls;
+  }
+
+  Future<void> deleteImage({@required String imageUrl}) async {
+    if (imageUrl.isNotEmpty) {
+      final StorageReference reference =
+          await FirebaseStorage.instance.getReferenceFromUrl(imageUrl);
+      return reference.delete();
+    }
   }
 }

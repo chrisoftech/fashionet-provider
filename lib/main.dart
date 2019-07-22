@@ -19,7 +19,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<AuthBloc>.value(value: AuthBloc.instance()),
         ChangeNotifierProvider<ProfileBloc>.value(
             value: ProfileBloc.instance()),
-        ChangeNotifierProvider<PostBloc>.value(value: PostBloc.instance())
+        ChangeNotifierProvider<PostBloc>.value(value: PostBloc.instance()),
+        ChangeNotifierProvider<CategoryBloc>.value(
+            value: CategoryBloc.instance()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

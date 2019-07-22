@@ -34,6 +34,16 @@ class _PostFormState extends State<PostForm> {
   List<Asset> _images = List<Asset>();
   String _error = 'No Error Dectected';
 
+  
+  bool get _isSavePostFABEnabled {
+    return _postBloc.postState == PostState.Loading ? false : true;
+  }
+
+  void _hideKeyPad() {
+    FocusScope.of(context).requestFocus(FocusNode());
+    // _scaffoldKey.currentState..hideCurrentSnackBar();
+  }
+
   Future<void> _loadAssets() async {
     List<Asset> resultList = List<Asset>();
     String error = 'No Error Dectected';
@@ -49,7 +59,7 @@ class _PostFormState extends State<PostForm> {
           cupertinoOptions: CupertinoOptions(takePhotoIcon: "chat"),
           materialOptions: MaterialOptions(
             actionBarColor: "#abcdef",
-            actionBarTitle: "FashioNet",
+            actionBarTitle: "Post Image(s)",
             allViewTitle: "All Photos",
             selectCircleStrokeColor: "#000000",
           ));
@@ -437,14 +447,6 @@ class _PostFormState extends State<PostForm> {
     );
   }
 
-  bool get _isSavePostFABEnabled {
-    return _postBloc.postState == PostState.Loading ? false : true;
-  }
-
-  void _hideKeyPad() {
-    FocusScope.of(context).requestFocus(FocusNode());
-    // _scaffoldKey.currentState..hideCurrentSnackBar();
-  }
 
   _showMessageSnackBar(
       {@required String content,
@@ -514,7 +516,7 @@ class _PostFormState extends State<PostForm> {
 
     if (_isPostCreated) {
       _showMessageSnackBar(
-          content: 'Profile is created sucessfully',
+          content: 'Post is created sucessfully',
           icon: Icons.check,
           isError: false);
 
