@@ -1,3 +1,4 @@
+import 'package:fashionet_provider/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 
 class Categories extends StatefulWidget {
@@ -6,6 +7,17 @@ class Categories extends StatefulWidget {
 }
 
 class _CategoriesState extends State<Categories> {
+  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  void _openCategoryFormDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CategoryForm(scaffoldKey: _scaffoldKey);
+      },
+    );
+  }
+
   Widget _buildCategoryCard({@required int index}) {
     return Card(
       child: ListTile(
@@ -21,7 +33,7 @@ class _CategoriesState extends State<Categories> {
           borderRadius: BorderRadius.circular(20.0),
           child: InkWell(
             onTap: () {
-              print('Edit Category $index');
+              print('Edited category $index');
             },
             borderRadius: BorderRadius.circular(20.0),
             child: Container(
@@ -69,9 +81,7 @@ class _CategoriesState extends State<Categories> {
               Material(
                 color: Colors.black12,
                 child: InkWell(
-                  onTap: () {
-                    print('Add Category');
-                  },
+                  onTap: _openCategoryFormDialog,
                   radius: 20.0,
                   borderRadius: BorderRadius.circular(20.0),
                   splashColor: Colors.black38,
