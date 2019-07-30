@@ -265,7 +265,11 @@ class _HomePageState extends State<HomePage> {
         bottomNavigationBar: BottomNavBar(
           activeIndex: _activePageIndex,
           onActiveIndexChange: (int index) {
-            setState(() => _pageController.jumpToPage(index));
+            setState(() {
+              _pageController.animateToPage(index,
+                  duration: Duration(milliseconds: 1000), curve: Curves.easeOut);
+            });
+            // setState(() => _pageController.jumpToPage(index));
           },
         ),
         body: SlidingUpPanel(

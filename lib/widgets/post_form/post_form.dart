@@ -1,5 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:fashionet_provider/blocs/blocs.dart';
+import 'package:fashionet_provider/models/models.dart';
 import 'package:flutter/material.dart';
 import 'package:keyboard_avoider/keyboard_avoider.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
@@ -17,6 +19,10 @@ class PostForm extends StatefulWidget {
 
 class _PostFormState extends State<PostForm> {
   final ScrollController _scrollController = ScrollController();
+
+  final _categoryScrollController = ScrollController();
+  final _scrollThreshold = 200.0;
+
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
@@ -26,13 +32,22 @@ class _PostFormState extends State<PostForm> {
   GlobalKey<ScaffoldState> get _scaffoldKey => widget.scaffoldKey;
 
   PostBloc _postBloc;
+  CategoryBloc _categoryBloc;
+
   int _currentPostImageIndex = 0;
 
-  final List<int> _selectedCategories = [];
+  final List<String> _selectedCategories = [];
   bool _isItemAvailable = false;
 
   List<Asset> _images = List<Asset>();
   String _error = 'No Error Dectected';
+
+  @override
+  void initState() {
+    super.initState();
+
+    _categoryScrollController.addListener(_onScroll);
+  }
 
   @override
   void dispose() {
@@ -45,7 +60,18 @@ class _PostFormState extends State<PostForm> {
     _priceController.dispose();
     _availabilityController.dispose();
 
+    _categoryScrollController.removeListener(_onScroll);
+
     print('Form disposed');
+  }
+
+  void _onScroll() {
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.position.pixels;
+    if (maxScroll - currentScroll <= _scrollThreshold) {
+      print('sroll next');
+      _categoryBloc.fetchMoreCategories();
+    }
   }
 
   bool get _isSavePostFABEnabled {
@@ -138,9 +164,8 @@ class _PostFormState extends State<PostForm> {
   Widget _buildPostImageCarousel() {
     return CarouselSlider(
         height: 400.0,
-        viewportFraction: _images.length > 1 ? 0.8 : 1.0,
+        viewportFraction: 1.0,
         enableInfiniteScroll: false,
-        // enlargeCenterPage: true,
         onPageChanged: (int index) {
           setState(() {
             _currentPostImageIndex = index;
@@ -149,23 +174,11 @@ class _PostFormState extends State<PostForm> {
         items: _images.map((Asset asset) {
           return Builder(
             builder: (BuildContext context) {
-              // return Image.asset('assets/images/temp$postImageUrl.jpg',
-              //     fit: BoxFit.cover);
-
               return AssetThumb(
                 asset: asset,
                 width: 300,
                 height: 300,
               );
-
-              //return CachedNetworkImage(
-              //   fit: BoxFit.cover,
-              //   imageUrl: 'assets/images/temp$postImageUrl',
-              //   placeholder: (context, url) =>
-              //       Center(child: new CircularProgressIndicator()),
-              //   errorWidget: (context, url, error) =>
-              //       Center(child: new Icon(Icons.error)),
-              // );
             },
           );
         }).toList());
@@ -370,7 +383,7 @@ class _PostFormState extends State<PostForm> {
     );
   }
 
-  Widget _buildCategorySynopsis({@required int categoryIndex}) {
+  Widget _buildCategorySynopsis({@required PostCategory category}) {
     return Positioned(
       left: 0.0,
       right: 0.0,
@@ -388,7 +401,9 @@ class _PostFormState extends State<PostForm> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              'John Doe $categoryIndex',
+              '${category.title}',
+              softWrap: true,
+              textAlign: TextAlign.center,
               style:
                   TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
@@ -399,65 +414,110 @@ class _PostFormState extends State<PostForm> {
   }
 
   Widget _buildCategoryList() {
-    return Container(
-      height: 100.0,
-      child: ListView.builder(
-        itemCount: 9,
-        scrollDirection: Axis.horizontal,
-        itemBuilder: (BuildContext context, int index) {
-          return Material(
-            elevation: 10.0,
-            child: InkWell(
-              onTap: () {
-                setState(() {
-                  _selectedCategories.contains(index)
-                      ? _selectedCategories.removeWhere((int item) {
-                          return item == index;
-                        })
-                      : _selectedCategories.add(index);
-                });
-                print(_selectedCategories.length);
-              },
-              child: Stack(
-                children: <Widget>[
-                  Container(
-                    height: 100.0,
-                    width: 100.0,
-                    margin: EdgeInsets.all(10.0),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(5.0),
-                      image: DecorationImage(
-                        image: AssetImage('assets/images/temp$index.jpg'),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  _buildCategorySynopsis(categoryIndex: index),
-                  !_selectedCategories.contains(index)
-                      ? Container()
-                      : Positioned(
-                          top: 10.0,
-                          left: 15.0,
-                          child: Container(
-                            height: 80.0,
-                            width: 90.0,
-                            color: Colors.black38,
-                            child: Center(
-                              child: Icon(
-                                Icons.check,
-                                size: 40.0,
-                                color: Colors.white,
+    return Consumer<CategoryBloc>(builder:
+        (BuildContext context, CategoryBloc categoryBloc, Widget child) {
+      _categoryBloc = categoryBloc;
+
+      return Container(
+        height: 100.0,
+        child: ListView.builder(
+          controller: _categoryScrollController,
+          itemCount: categoryBloc.moreCategoriesAvailable
+              ? categoryBloc.postCategories.length + 1
+              : categoryBloc.postCategories.length,
+          scrollDirection: Axis.horizontal,
+          itemBuilder: (BuildContext context, int index) {
+            if (index >= categoryBloc.postCategories.length) {
+              return Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10.0),
+                  child: Center(
+                      child: CircularProgressIndicator(strokeWidth: 2.0)));
+            } else {
+              final PostCategory _postCategory =
+                  categoryBloc.postCategories[index];
+
+              return Material(
+                elevation: 10.0,
+                child: InkWell(
+                  onTap: () {
+                    final String _categoryId = _postCategory.categoryId;
+
+                    if (_selectedCategories.contains(_categoryId)) {
+                      // remove categoryId from list if it exists
+                      setState(() {
+                        _selectedCategories.removeWhere(
+                            (String categoryId) => categoryId == _categoryId);
+                      });
+                    } else {
+                      // check if number of list items == 4 (MaxCategoriesAllowed)
+                      if (_selectedCategories.length == 4) {
+                        _showMessageSnackBar(
+                            content:
+                                'Maximum number of categories allowed reached!',
+                            icon: Icons.error_outline,
+                            isError: true);
+
+                        return;
+                      }
+
+                      // add categoryId to list if it does not exist in list already
+                      setState(() {
+                        _selectedCategories.add(_categoryId);
+                      });
+                    }
+                    print(_selectedCategories.length);
+                  },
+                  child: Stack(
+                    children: <Widget>[
+                      CachedNetworkImage(
+                          imageUrl: '${_postCategory.imageUrl}',
+                          placeholder: (context, image) =>
+                              CircularProgressIndicator(strokeWidth: 2.0),
+                          errorWidget: (context, image, error) =>
+                              Icon(Icons.error),
+                          imageBuilder:
+                              (BuildContext context, ImageProvider image) {
+                            return Container(
+                              height: 100.0,
+                              width: 100.0,
+                              margin: EdgeInsets.all(10.0),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(5.0),
+                                image: DecorationImage(
+                                  image: image,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            );
+                          }),
+                      _buildCategorySynopsis(category: _postCategory),
+                      !_selectedCategories.contains(_postCategory.categoryId)
+                          ? Container()
+                          : Positioned(
+                              top: 10.0,
+                              left: 15.0,
+                              child: Container(
+                                height: 80.0,
+                                width: 90.0,
+                                color: Colors.black38,
+                                child: Center(
+                                  child: Icon(
+                                    Icons.check,
+                                    size: 40.0,
+                                    color: Colors.white,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
+                    ],
+                  ),
+                ),
+              );
+            }
+          },
+        ),
+      );
+    });
   }
 
   _showMessageSnackBar(
@@ -482,6 +542,18 @@ class _PostFormState extends State<PostForm> {
     }
   }
 
+  Future<void> _scrollToStart() async {
+    await _categoryScrollController.animateTo(
+        _scrollController.position.minScrollExtent,
+        duration: Duration(milliseconds: 500),
+        curve: Curves.easeIn);
+
+    await _scrollController.animateTo(
+        _scrollController.position.minScrollExtent,
+        duration: Duration(milliseconds: 500),
+        curve: Curves.easeIn);
+  }
+
   void _resetForm() {
     _images.clear();
     _formKey.currentState.reset();
@@ -492,16 +564,22 @@ class _PostFormState extends State<PostForm> {
 
     _isItemAvailable = false;
     _availabilityController.text = _isItemAvailable ? 'YES' : 'NO';
+
+    _selectedCategories.clear();
+    _scrollToStart();
   }
 
   Future<void> _onUploadFABClicked() async {
     _hideKeyPad();
+    // _resetForm()
 
     if (_images.isEmpty) {
       _showMessageSnackBar(
           content: 'Please select post image(s) to continue!',
           icon: Icons.error_outline,
           isError: true);
+
+      _scrollToStart();
 
       return;
     }
@@ -523,7 +601,7 @@ class _PostFormState extends State<PostForm> {
           ? 0.0
           : double.parse(_priceController.text),
       isAvailable: _isItemAvailable,
-      category: 'Category',
+      categories: _selectedCategories,
     );
 
     if (_isPostCreated) {
@@ -660,7 +738,16 @@ class _PostFormState extends State<PostForm> {
                     sectionTitle: 'Category Section',
                     sectionDetails:
                         'You can select up to 4 categories for a post'),
-                _buildCategoryList(),
+                Consumer<CategoryBloc>(builder: (BuildContext context,
+                    CategoryBloc categoryBloc, Widget child) {
+                  return categoryBloc.categoryState == CategoryState.Loading
+                      ? CircularProgressIndicator()
+                      : categoryBloc.postCategories.length == 0
+                          ? Center(
+                              child: Text('No Categories'),
+                            )
+                          : _buildCategoryList();
+                }),
                 SizedBox(height: 60.0),
               ],
             ),

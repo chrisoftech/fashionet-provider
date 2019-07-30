@@ -41,7 +41,7 @@ class PostBloc with ChangeNotifier {
       @required String description,
       @required double price,
       @required bool isAvailable,
-      @required String category}) async {
+      @required List<String> categories}) async {
     try {
       _postState = PostState.Loading;
       notifyListeners();
@@ -58,7 +58,7 @@ class PostBloc with ChangeNotifier {
         description: description,
         price: price,
         isAvailable: isAvailable,
-        category: category,
+        categories: categories,
       );
 
       print(_reference.documentID);

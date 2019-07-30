@@ -39,10 +39,10 @@ class _CategoriesState extends State<Categories> {
     }
   }
 
-  void _openCategoryFormDialog() {
-    showDialog(
-        context: context, builder: (BuildContext context) => CategoryForm());
-  }
+  // void _openCategoryFormDialog() {
+  //   showDialog(
+  //       context: context, builder: (BuildContext context) => CategoryForm());
+  // }
 
   Future<void> _navigateToCategoryForm() {
     return Navigator.of(context).pushReplacementNamed('/category-form');

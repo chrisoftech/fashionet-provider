@@ -17,7 +17,7 @@ class PostRepository {
       @required String description,
       @required double price,
       @required bool isAvailable,
-      @required String category}) {
+      @required List<String> categories}) {
     return _postCollection.add({
       'imageUrls': imageUrls,
       'userId': userId,
@@ -25,7 +25,7 @@ class PostRepository {
       'description': description,
       'price': price,
       'isAvailable': isAvailable,
-      'category': category,
+      'category': categories,
       'created': _firestoreTimestamp,
       'lastUpdate': _firestoreTimestamp,
     });
