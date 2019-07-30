@@ -39,7 +39,7 @@ class CategoryBloc with ChangeNotifier {
       notifyListeners();
 
       QuerySnapshot _snapshot =
-          await _categoryRepository.fetchCategories(lastVisiblePost: null);
+          await _categoryRepository.fetchCategories(lastVisiblePostCategory: null);
 
       List<PostCategory> _categories = [];
 
@@ -78,9 +78,8 @@ class CategoryBloc with ChangeNotifier {
     try {
       final List<PostCategory> currentCategories = _postCategories;
 
-      final PostCategory lastVisiblePost =
+      final PostCategory lastVisiblePostCategory =
           currentCategories[currentCategories.length - 1];
-
 
       if (_fetchingMoreCategories == true) {
         print('Fetching more categories!');
@@ -92,7 +91,7 @@ class CategoryBloc with ChangeNotifier {
       notifyListeners();
 
       final QuerySnapshot _snapshot = await _categoryRepository.fetchCategories(
-          lastVisiblePost: lastVisiblePost);
+          lastVisiblePostCategory: lastVisiblePostCategory);
 
       if (_snapshot.documents.length < 1) {
         _moreCategoriesAvailable = false;

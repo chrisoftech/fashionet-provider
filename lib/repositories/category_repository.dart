@@ -10,16 +10,16 @@ class CategoryRepository {
       : _firestoreTimestamp = FieldValue.serverTimestamp(),
         _categoryCollection = Firestore.instance.collection('categories');
 
-  Future<QuerySnapshot> fetchCategories({@required PostCategory lastVisiblePost}) {
-    return lastVisiblePost == null
+  Future<QuerySnapshot> fetchCategories({@required PostCategory lastVisiblePostCategory}) {
+    return lastVisiblePostCategory == null
         ? _categoryCollection
             .orderBy('lastUpdate', descending: true)
             .limit(5)
             .getDocuments()
         : _categoryCollection
             .orderBy('lastUpdate', descending: true)
-            .startAfter([lastVisiblePost.lastUpdate])
-            .limit(4)
+            .startAfter([lastVisiblePostCategory.lastUpdate])
+            .limit(5)
             .getDocuments();
   }
 

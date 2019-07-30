@@ -2,9 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fashionet_provider/blocs/blocs.dart';
 import 'package:fashionet_provider/models/models.dart';
 import 'package:fashionet_provider/modules/utilities/utilities.dart';
-import 'package:fashionet_provider/widgets/widgets.dart';
 import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
 import 'package:provider/provider.dart';
 
 class Categories extends StatefulWidget {
@@ -61,8 +59,14 @@ class _CategoriesState extends State<Categories> {
                 height: 50.0,
                 width: 50.0,
                 decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    image: DecorationImage(image: image, fit: BoxFit.cover)),
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    image: image,
+                    fit: BoxFit.cover,
+                    // colorFilter:
+                    //     ColorFilter.mode(Colors.red, BlendMode.colorBurn),
+                  ),
+                ),
               );
             }),
         title: Text('${category.title}'),

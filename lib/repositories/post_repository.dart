@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fashionet_provider/models/models.dart';
 import 'package:meta/meta.dart';
 
 class PostRepository {
@@ -9,6 +10,19 @@ class PostRepository {
   PostRepository()
       : _firestoreTimestamp = FieldValue.serverTimestamp(),
         _postCollection = Firestore.instance.collection('posts');
+
+  Future<QuerySnapshot> fetchPosts({@required Post lastVisiblePost}) {
+    return lastVisiblePost == null
+        ? _postCollection
+            .orderBy('lastUpdate', descending: true)
+            .limit(5)
+            .getDocuments()
+        : _postCollection
+            .orderBy('lastUpdate', descending: true)
+            .startAfter([lastVisiblePost.lastUpdate])
+            .limit(5)
+            .getDocuments();
+  }
 
   Future<DocumentReference> createPost(
       {@required List<String> imageUrls,

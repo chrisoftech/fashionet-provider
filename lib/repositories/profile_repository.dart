@@ -14,6 +14,10 @@ class ProfileRepository {
     return _profileCollection.document(userId).get();
   }
 
+  Future<DocumentSnapshot> fetchProfile({@required String userId}) {
+    return _profileCollection.document(userId).get();
+  }
+
   Future<void> createProfile(
       {@required String userId,
       @required String firstName,
