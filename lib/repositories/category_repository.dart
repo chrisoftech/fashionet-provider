@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fashionet_provider/models/models.dart';
 import 'package:meta/meta.dart';
 
 class CategoryRepository {
@@ -8,6 +9,19 @@ class CategoryRepository {
   CategoryRepository()
       : _firestoreTimestamp = FieldValue.serverTimestamp(),
         _categoryCollection = Firestore.instance.collection('categories');
+
+  Future<QuerySnapshot> fetchCategories({@required PostCategory lastVisiblePost}) {
+    return lastVisiblePost == null
+        ? _categoryCollection
+            .orderBy('lastUpdate', descending: true)
+            .limit(5)
+            .getDocuments()
+        : _categoryCollection
+            .orderBy('lastUpdate', descending: true)
+            .startAfter([lastVisiblePost.lastUpdate])
+            .limit(4)
+            .getDocuments();
+  }
 
   Future<DocumentReference> createCategory(
       {@required String imageUrl,

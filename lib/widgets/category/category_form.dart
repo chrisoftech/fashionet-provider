@@ -12,6 +12,8 @@ class CategoryForm extends StatefulWidget {
 
 class _CategoryFormState extends State<CategoryForm> {
   final ScrollController _scrollController = ScrollController();
+  final FocusNode _titleFocusNode = FocusNode();
+
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
 
@@ -22,6 +24,34 @@ class _CategoryFormState extends State<CategoryForm> {
 
   List<Asset> _images = List<Asset>();
   String _error = 'No Error Dectected';
+
+  @override
+  void initState() {
+    super.initState();
+
+    _titleFocusNode.addListener(_isTitleFieldFocused);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    _scrollController.dispose();
+    _titleFocusNode.dispose();
+
+    _titleController.dispose();
+    _descriptionController.dispose();
+  }
+
+  void _isTitleFieldFocused() {
+    if (_titleFocusNode.hasFocus) {
+      print('Textfield has focus ${_titleFocusNode.hasFocus}');
+      setState(() {
+        _scrollController.animateTo(_scrollController.position.maxScrollExtent,
+            duration: Duration(seconds: 1), curve: Curves.easeOut);
+      });
+    }
+  }
 
   bool get _isSaveCategoryFABEnabled {
     return _categoryBloc.categoryState == CategoryState.Loading ? false : true;
@@ -185,6 +215,7 @@ class _CategoryFormState extends State<CategoryForm> {
   Widget _buildTitleTextFormField() {
     return TextFormField(
       controller: _titleController,
+      focusNode: _titleFocusNode,
       style: TextStyle(fontSize: 20.0),
       decoration: InputDecoration(
           labelText: 'Title', hintText: 'Enter Title', filled: true),
@@ -268,6 +299,9 @@ class _CategoryFormState extends State<CategoryForm> {
       description: _descriptionController.text,
       asset: _images[0],
     );
+
+    // fetch categories after creating
+    await _categoryBloc.fetchCategories();
 
     if (_isCategoryCreated) {
       _showMessageSnackBar(
@@ -398,7 +432,8 @@ class _CategoryFormState extends State<CategoryForm> {
                     sectionDetails: 'Enter category details'),
                 _buildTitleTextFormField(),
                 _buildDescriptionTextFormField(),
-                SizedBox(height: 70.0),
+                SizedBox(height: 20.0),
+                _buildCustomSaveCategoryFAB(),
               ],
             ),
           ),
@@ -408,15 +443,12 @@ class _CategoryFormState extends State<CategoryForm> {
   }
 
   Widget _buildCustomScrollView({@required double formContainerPaddingValue}) {
-    return KeyboardAvoider(
-      autoScroll: true,
-      child: CustomScrollView(
-        controller: _scrollController,
-        slivers: <Widget>[
-          _buildSliverAppBar(),
-          _buildSliverList(),
-        ],
-      ),
+    return CustomScrollView(
+      controller: _scrollController,
+      slivers: <Widget>[
+        _buildSliverAppBar(),
+        _buildSliverList(),
+      ],
     );
   }
 
@@ -433,18 +465,11 @@ class _CategoryFormState extends State<CategoryForm> {
 
     _categoryBloc = Provider.of<CategoryBloc>(context);
 
-    return Scaffold(
-      key: _scaffoldKey,
-      resizeToAvoidBottomInset: false,
-      body: GestureDetector(
+    return Dialog(
+      child: GestureDetector(
         onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
-        child: Stack(
-          children: <Widget>[
-            _buildCustomScrollView(
-                formContainerPaddingValue: _formContainerPaddingValue),
-            _buildCustomSaveCategoryFAB(),
-          ],
-        ),
+        child: _buildCustomScrollView(
+            formContainerPaddingValue: _formContainerPaddingValue),
       ),
     );
   }

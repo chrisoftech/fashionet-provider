@@ -19,6 +19,8 @@ class _HomePageState extends State<HomePage> {
 
   Color get _primaryColor => Theme.of(context).primaryColor;
 
+  // CategoryBloc _categoryBloc;
+
   int _activePageIndex = 0;
   final _pageController = PageController(initialPage: 0, keepPage: false);
   PageView _pageView;
@@ -69,8 +71,9 @@ class _HomePageState extends State<HomePage> {
 
   void _menuChoiceAction(String menuChoice) {
     print(menuChoice);
-    if(menuChoice == 'Categories') {
+    if (menuChoice == 'Categories') {
       _openCategoryModal();
+      // _navigateToCatgoryPage();
       return;
     }
   }
@@ -199,6 +202,7 @@ class _HomePageState extends State<HomePage> {
     double _deviceWidth = MediaQuery.of(context).size.width;
 
     final AuthBloc _authBloc = Provider.of<AuthBloc>(context);
+    // _categoryBloc = Provider.of<CategoryBloc>(context);
 
     _pageView = PageView(
       controller: _pageController,
