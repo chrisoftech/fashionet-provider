@@ -34,7 +34,20 @@ class _PostFormState extends State<PostForm> {
   List<Asset> _images = List<Asset>();
   String _error = 'No Error Dectected';
 
-  
+  @override
+  void dispose() {
+    super.dispose();
+
+    _scrollController.dispose();
+
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _priceController.dispose();
+    _availabilityController.dispose();
+
+    print('Form disposed');
+  }
+
   bool get _isSavePostFABEnabled {
     return _postBloc.postState == PostState.Loading ? false : true;
   }
@@ -447,7 +460,6 @@ class _PostFormState extends State<PostForm> {
     );
   }
 
-
   _showMessageSnackBar(
       {@required String content,
       @required IconData icon,
@@ -633,28 +645,24 @@ class _PostFormState extends State<PostForm> {
         Container(
           // padding: EdgeInsets.symmetric(
           //     horizontal: formContainerPaddingValue / 2),
-          child: Padding(
-            padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: <Widget>[
-                  _buildSectionLabel(
-                      sectionTitle: 'Details Section',
-                      sectionDetails: 'Enter post details'),
-                  _buildTitleTextFormField(),
-                  _buildDescriptionTextFormField(),
-                  _buildPriceTextFormField(),
-                  _buildIsProductAvailableFormField(),
-                  _buildSectionLabel(
-                      sectionTitle: 'Category Section',
-                      sectionDetails:
-                          'You can select up to 4 categories for a post'),
-                  _buildCategoryList(),
-                  SizedBox(height: 60.0),
-                ],
-              ),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: <Widget>[
+                _buildSectionLabel(
+                    sectionTitle: 'Details Section',
+                    sectionDetails: 'Enter post details'),
+                _buildTitleTextFormField(),
+                _buildDescriptionTextFormField(),
+                _buildPriceTextFormField(),
+                _buildIsProductAvailableFormField(),
+                _buildSectionLabel(
+                    sectionTitle: 'Category Section',
+                    sectionDetails:
+                        'You can select up to 4 categories for a post'),
+                _buildCategoryList(),
+                SizedBox(height: 60.0),
+              ],
             ),
           ),
         ),
@@ -691,14 +699,16 @@ class _PostFormState extends State<PostForm> {
     // final PostBloc _postBloc = Provider.of<PostBloc>(context);
     _postBloc = Provider.of<PostBloc>(context);
 
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
-      child: Stack(
-        children: <Widget>[
-          _buildCustomScrollView(
-              formContainerPaddingValue: _formContainerPaddingValue),
-          _buildCustomSavePostFAB(),
-        ],
+    return SafeArea(
+      child: GestureDetector(
+        onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
+        child: Stack(
+          children: <Widget>[
+            _buildCustomScrollView(
+                formContainerPaddingValue: _formContainerPaddingValue),
+            _buildCustomSavePostFAB(),
+          ],
+        ),
       ),
     );
   }

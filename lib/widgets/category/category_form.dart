@@ -11,9 +11,6 @@ class CategoryForm extends StatefulWidget {
 }
 
 class _CategoryFormState extends State<CategoryForm> {
-  final ScrollController _scrollController = ScrollController();
-  final FocusNode _titleFocusNode = FocusNode();
-
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
 
@@ -26,31 +23,11 @@ class _CategoryFormState extends State<CategoryForm> {
   String _error = 'No Error Dectected';
 
   @override
-  void initState() {
-    super.initState();
-
-    _titleFocusNode.addListener(_isTitleFieldFocused);
-  }
-
-  @override
   void dispose() {
     super.dispose();
 
-    _scrollController.dispose();
-    _titleFocusNode.dispose();
-
     _titleController.dispose();
     _descriptionController.dispose();
-  }
-
-  void _isTitleFieldFocused() {
-    if (_titleFocusNode.hasFocus) {
-      print('Textfield has focus ${_titleFocusNode.hasFocus}');
-      setState(() {
-        _scrollController.animateTo(_scrollController.position.maxScrollExtent,
-            duration: Duration(seconds: 1), curve: Curves.easeOut);
-      });
-    }
   }
 
   bool get _isSaveCategoryFABEnabled {
@@ -215,7 +192,6 @@ class _CategoryFormState extends State<CategoryForm> {
   Widget _buildTitleTextFormField() {
     return TextFormField(
       controller: _titleController,
-      focusNode: _titleFocusNode,
       style: TextStyle(fontSize: 20.0),
       decoration: InputDecoration(
           labelText: 'Title', hintText: 'Enter Title', filled: true),
@@ -387,6 +363,12 @@ class _CategoryFormState extends State<CategoryForm> {
       flexibleSpace: FlexibleSpaceBar(
         background: _buildFlexibleSpaceBackground(),
       ),
+      leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).primaryColor,
+          ),
+          onPressed: () => Navigator.of(context).pushReplacementNamed('/home')),
       bottom: PreferredSize(
         preferredSize: Size.fromHeight(0.0),
         child: Material(
@@ -444,7 +426,6 @@ class _CategoryFormState extends State<CategoryForm> {
 
   Widget _buildCustomScrollView({@required double formContainerPaddingValue}) {
     return CustomScrollView(
-      controller: _scrollController,
       slivers: <Widget>[
         _buildSliverAppBar(),
         _buildSliverList(),
@@ -465,11 +446,19 @@ class _CategoryFormState extends State<CategoryForm> {
 
     _categoryBloc = Provider.of<CategoryBloc>(context);
 
-    return Dialog(
-      child: GestureDetector(
-        onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
-        child: _buildCustomScrollView(
-            formContainerPaddingValue: _formContainerPaddingValue),
+    return WillPopScope(
+      onWillPop: () {
+        Navigator.of(context).pushReplacementNamed('/home');
+      },
+      child: Scaffold(
+        key: _scaffoldKey,
+        body: SafeArea(
+          child: GestureDetector(
+            onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
+            child: _buildCustomScrollView(
+                formContainerPaddingValue: _formContainerPaddingValue),
+          ),
+        ),
       ),
     );
   }

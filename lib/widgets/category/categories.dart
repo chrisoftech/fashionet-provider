@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fashionet_provider/blocs/blocs.dart';
 import 'package:fashionet_provider/models/models.dart';
 import 'package:fashionet_provider/modules/utilities/utilities.dart';
@@ -43,12 +44,27 @@ class _CategoriesState extends State<Categories> {
         context: context, builder: (BuildContext context) => CategoryForm());
   }
 
+  Future<void> _navigateToCategoryForm() {
+    return Navigator.of(context).pushReplacementNamed('/category-form');
+  }
+
   Widget _buildCategoryCard({@required PostCategory category}) {
     return Card(
       child: ListTile(
-        leading: CircleAvatar(
-          backgroundImage: NetworkImage('${category.imageUrl}'),
-        ),
+        leading: CachedNetworkImage(
+            imageUrl: '${category.imageUrl}',
+            placeholder: (context, url) =>
+                CircularProgressIndicator(strokeWidth: 2.0),
+            errorWidget: (context, url, error) => Icon(Icons.error),
+            imageBuilder: (BuildContext context, ImageProvider image) {
+              return Container(
+                height: 50.0,
+                width: 50.0,
+                decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    image: DecorationImage(image: image, fit: BoxFit.cover)),
+              );
+            }),
         title: Text('${category.title}'),
         subtitle: Text(
           '${category.description}',
@@ -90,7 +106,8 @@ class _CategoriesState extends State<Categories> {
         Material(
           color: Colors.black12,
           child: InkWell(
-            onTap: _openCategoryFormDialog,
+            // onTap: _openCategoryFormDialog,
+            onTap: _navigateToCategoryForm,
             radius: 20.0,
             borderRadius: BorderRadius.circular(20.0),
             splashColor: Colors.black38,

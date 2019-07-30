@@ -16,6 +16,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final PanelController _panelController = PanelController();
 
   Color get _primaryColor => Theme.of(context).primaryColor;
 
@@ -30,8 +31,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    _pageController.dispose();
     super.dispose();
+    _pageController.dispose();
   }
 
   final Shader linearGradient = LinearGradient(
@@ -196,6 +197,30 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Future<bool> _showExitAlertDialog() {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Close Application'),
+            content: Text('Are you sure of exiting FASHIONet?'),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('Cancel'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              RaisedButton(
+                  child: Text('Exit'),
+                  onPressed: () {
+                    Navigator.of(context).pop(true);
+                  }),
+            ],
+          );
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     double _deviceHeight = MediaQuery.of(context).size.height;
@@ -217,30 +242,40 @@ class _HomePageState extends State<HomePage> {
       ],
     );
 
-    return Scaffold(
-      key: _scaffoldKey,
-      resizeToAvoidBottomInset: false,
-      appBar: _buildAppBar(context),
-      drawer: Drawer(
-        child: Center(
-          child: RaisedButton(
-            child: Text('Logout'),
-            onPressed: () => _authBloc.signout(),
+    return WillPopScope(
+      onWillPop: () {
+        if (_panelController.isPanelOpen()) {
+          _panelController.close();
+        } else {
+          _showExitAlertDialog();
+        }
+      },
+      child: Scaffold(
+        key: _scaffoldKey,
+        resizeToAvoidBottomInset: false,
+        appBar: _buildAppBar(context),
+        drawer: Drawer(
+          child: Center(
+            child: RaisedButton(
+              child: Text('Logout'),
+              onPressed: () => _authBloc.signout(),
+            ),
           ),
         ),
-      ),
-      bottomNavigationBar: BottomNavBar(
-        activeIndex: _activePageIndex,
-        onActiveIndexChange: (int index) {
-          setState(() => _pageController.jumpToPage(index));
-        },
-      ),
-      body: SlidingUpPanel(
-        minHeight: 50.0,
-        renderPanelSheet: false,
-        panel: _floatingPanel(),
-        collapsed: _floatingCollapsed(),
-        body: _pageView,
+        bottomNavigationBar: BottomNavBar(
+          activeIndex: _activePageIndex,
+          onActiveIndexChange: (int index) {
+            setState(() => _pageController.jumpToPage(index));
+          },
+        ),
+        body: SlidingUpPanel(
+          minHeight: 50.0,
+          renderPanelSheet: false,
+          controller: _panelController,
+          panel: _floatingPanel(),
+          collapsed: _floatingCollapsed(),
+          body: _pageView,
+        ),
       ),
     );
   }

@@ -34,6 +34,7 @@ class MyApp extends StatelessWidget {
         home: new DynamicInitialPage(),
         routes: <String, WidgetBuilder>{
           '/home': (BuildContext context) => HomePage(),
+          '/category-form': (BuildContext context) => CategoryForm(),
         },
       ),
     );
