@@ -11,6 +11,35 @@ class PostRepository {
       : _firestoreTimestamp = FieldValue.serverTimestamp(),
         _postCollection = Firestore.instance.collection('posts');
 
+  Future<bool> isBookmarked(
+      {@required String postId, @required String userId}) async {
+    final DocumentSnapshot snapshot = await _postCollection
+        .document(postId)
+        .collection('bookmarks')
+        .document(userId)
+        .get();
+
+    return snapshot.exists;
+  }
+
+  Future<void> addToBookmark(
+      {@required String postId, @required String userId}) {
+    return _postCollection
+        .document(postId)
+        .collection('bookmarks')
+        .document(userId)
+        .setData({'isBookmarked': true});
+  }
+
+  Future<void> removeFromBookmark(
+      {@required String postId, @required String userId}) {
+    return _postCollection
+        .document(postId)
+        .collection('bookmarks')
+        .document(userId)
+        .delete();
+  }
+
   Future<QuerySnapshot> fetchPosts({@required Post lastVisiblePost}) {
     return lastVisiblePost == null
         ? _postCollection

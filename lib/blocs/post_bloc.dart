@@ -49,11 +49,74 @@ class PostBloc with ChangeNotifier {
     }
   }
 
+  Future<void> toggleBookmarkStatus({@required Post post}) async {
+    final bool _bookmarkStatus = post.isBookmarked;
+    final bool _newBookmarkStatus = !_bookmarkStatus;
+
+    final String _userId = await _authBloc.getUser;
+    final String _postId = post.postId;
+
+    final Post _updatedPost = Post(
+      userId: _userId,
+      postId: _postId,
+      title: post.title,
+      description: post.description,
+      price: post.price,
+      isAvailable: post.isAvailable,
+      imageUrls: post.imageUrls,
+      categories: post.categories,
+      created: post.created,
+      lastUpdate: post.lastUpdate,
+      profile: post.profile,
+      isBookmarked: _newBookmarkStatus,
+    );
+
+    final int _postIndex =
+        _posts.indexWhere((Post post) => post.postId == _postId);
+
+    // update post in List<post>;
+    _posts[_postIndex] = _updatedPost;
+    notifyListeners();
+
+    try {
+      if (_newBookmarkStatus) {
+        await _postRepository.addToBookmark(postId: _postId, userId: _userId);
+        print('Bookmarked');
+      } else {
+        await _postRepository.removeFromBookmark(
+            postId: _postId, userId: _userId);
+        print('Not Bookmarked');
+      }
+    } catch (e) {
+      print(e.toString());
+
+      final Post _updatedPost = Post(
+        userId: _userId,
+        postId: _postId,
+        title: post.title,
+        description: post.description,
+        price: post.price,
+        isAvailable: post.isAvailable,
+        imageUrls: post.imageUrls,
+        categories: post.categories,
+        created: post.created,
+        lastUpdate: post.lastUpdate,
+        profile: post.profile,
+        isBookmarked: !_newBookmarkStatus,
+      );
+
+      // update post in List<post>;
+      _posts[_postIndex] = _updatedPost;
+      notifyListeners();
+    }
+  }
+
   Future<void> fetchPosts() async {
     try {
       _postState = PostState.Loading;
       notifyListeners();
 
+      final String _currentUserId = await _authBloc.getUser;
       QuerySnapshot _snapshot =
           await _postRepository.fetchPosts(lastVisiblePost: null);
 
@@ -62,27 +125,52 @@ class PostBloc with ChangeNotifier {
       _snapshot.documents.forEach((DocumentSnapshot document) async {
         final String _postId = document.documentID;
         final String _userId = document.data['userId'];
+        // bool _isBookmarked = false;
 
         // fetch user for current post
         final Profile _profile =
             await _profileBloc.fetchProfile(userId: _userId);
 
-        // print(_profile.firstName);
-
         final _post = Post(
-            userId: _userId,
-            postId: _postId,
-            title: document.data['title'],
-            description: document.data['description'],
-            price: document.data['price'],
-            isAvailable: document.data['isAvailable'],
-            imageUrls: document.data['imageUrls'],
-            categories: document.data['categories'],
-            created: document.data['created'],
-            lastUpdate: document.data['lastUpdate'],
-            profile: _profile);
+          userId: _userId,
+          postId: _postId,
+          title: document.data['title'],
+          description: document.data['description'],
+          price: document.data['price'],
+          isAvailable: document.data['isAvailable'],
+          imageUrls: document.data['imageUrls'],
+          categories: document.data['categories'],
+          created: document.data['created'],
+          lastUpdate: document.data['lastUpdate'],
+          profile: _profile,
+          // isBookmarked: _isBookmarked,
+        );
 
         posts.add(_post);
+
+        final _postIndex =
+            posts.indexWhere((Post post) => post.postId == _postId);
+
+        // get post bookmark status for current user
+        final bool _isBookmarked = await _postRepository.isBookmarked(
+            postId: _postId, userId: _currentUserId);
+
+        final _updatedPost = Post(
+          userId: _userId,
+          postId: _postId,
+          title: document.data['title'],
+          description: document.data['description'],
+          price: document.data['price'],
+          isAvailable: document.data['isAvailable'],
+          imageUrls: document.data['imageUrls'],
+          categories: document.data['categories'],
+          created: document.data['created'],
+          lastUpdate: document.data['lastUpdate'],
+          profile: _profile,
+          isBookmarked: _isBookmarked,
+        );
+
+        posts[_postIndex] = _updatedPost;
       });
 
       _posts = posts;
@@ -115,6 +203,7 @@ class PostBloc with ChangeNotifier {
       _fetchingMorePosts = true;
       notifyListeners();
 
+      final String _currentUserId = await _authBloc.getUser;
       final QuerySnapshot _snapshot =
           await _postRepository.fetchPosts(lastVisiblePost: lastVisiblePost);
 
@@ -137,8 +226,6 @@ class PostBloc with ChangeNotifier {
         final Profile _profile =
             await _profileBloc.fetchProfile(userId: _userId);
 
-        // print(_profile.firstName);
-
         final _post = Post(
           userId: _userId,
           postId: _postId,
@@ -151,9 +238,34 @@ class PostBloc with ChangeNotifier {
           created: document.data['created'],
           lastUpdate: document.data['lastUpdate'],
           profile: _profile,
+          // isBookmarked: _isBookmarked,
         );
 
         posts.add(_post);
+
+        final _postIndex =
+            posts.indexWhere((Post post) => post.postId == _postId);
+
+        // get post bookmark status for current user
+        final bool _isBookmarked = await _postRepository.isBookmarked(
+            postId: _postId, userId: _currentUserId);
+
+        final _updatedPost = Post(
+          userId: _userId,
+          postId: _postId,
+          title: document.data['title'],
+          description: document.data['description'],
+          price: document.data['price'],
+          isAvailable: document.data['isAvailable'],
+          imageUrls: document.data['imageUrls'],
+          categories: document.data['categories'],
+          created: document.data['created'],
+          lastUpdate: document.data['lastUpdate'],
+          profile: _profile,
+          isBookmarked: _isBookmarked,
+        );
+
+        posts[_postIndex] = _updatedPost;
       });
 
       posts.isEmpty ? _posts = currentPosts : _posts += posts;

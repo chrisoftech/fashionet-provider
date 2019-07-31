@@ -13,6 +13,7 @@ class Post {
   final dynamic created;
   final dynamic lastUpdate;
   final Profile profile;
+  final bool isBookmarked;
 
   Post({
     @required this.userId,
@@ -26,5 +27,6 @@ class Post {
     @required this.created,
     @required this.lastUpdate,
     @required this.profile,
+    this.isBookmarked = false,
   });
 }

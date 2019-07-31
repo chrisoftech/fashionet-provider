@@ -267,7 +267,7 @@ class _HomePageState extends State<HomePage> {
           onActiveIndexChange: (int index) {
             setState(() {
               _pageController.animateToPage(index,
-                  duration: Duration(milliseconds: 1000), curve: Curves.easeOut);
+                  duration: Duration(milliseconds: 1000), curve: Curves.ease);
             });
             // setState(() => _pageController.jumpToPage(index));
           },

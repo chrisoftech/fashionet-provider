@@ -1,8 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fashionet_provider/blocs/blocs.dart';
 import 'package:fashionet_provider/models/models.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class PostItemCardDefault extends StatefulWidget {
   final List<dynamic> postImages;
@@ -17,6 +19,7 @@ class PostItemCardDefault extends StatefulWidget {
 
 class _PostItemCardDefaultState extends State<PostItemCardDefault> {
   int _currentPostImageIndex = 0;
+  bool _isFavorite = false;
 
   List<dynamic> get _postImages => widget.postImages;
   Post get _post => widget.post;
@@ -128,65 +131,81 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
     );
   }
 
+  Widget _buildUserListTile() {
+    return ListTile(
+      onTap: () {},
+      leading: Container(
+        height: 50.0,
+        width: 50.0,
+        child: _post != null
+            ? CachedNetworkImage(
+                imageUrl: '${_post.profile.profileImageUrl}',
+                placeholder: (context, imageUrl) =>
+                    Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
+                errorWidget: (context, imageUrl, error) =>
+                    Center(child: Icon(Icons.error)),
+                imageBuilder: (BuildContext context, ImageProvider image) {
+                  return Container(
+                    height: 50.0,
+                    width: 50.0,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      image: DecorationImage(image: image, fit: BoxFit.cover),
+                    ),
+                  );
+                },
+              )
+            : ClipRRect(
+                borderRadius: BorderRadius.circular(25.0),
+                child: Image.asset('assets/avatars/ps-avatar.png',
+                    fit: BoxFit.cover),
+              ),
+      ),
+      title: Text('${_post.profile.firstName} ${_post.profile.lastName}',
+          style: TextStyle(fontWeight: FontWeight.bold)),
+      subtitle:
+          Text('${DateFormat.yMMMMEEEEd().format(_post.lastUpdate.toDate())}'),
+      trailing: IconButton(
+        onPressed: () {
+          print('isFavorite');
+
+          setState(() {
+            _isFavorite = !_isFavorite;
+          });
+        },
+        icon: Icon(_isFavorite ? Icons.favorite : Icons.favorite_border,
+            color: Colors.red),
+      ),
+    );
+  }
+
+  Widget _buildPostListTile() {
+    return ListTile(
+      onTap: () {},
+      title:
+          Text('${_post.title}', style: TextStyle(fontWeight: FontWeight.bold)),
+      subtitle: Text('${_post.description}', overflow: TextOverflow.ellipsis),
+      trailing: Consumer<PostBloc>(
+          builder: (BuildContext context, PostBloc postBloc, Widget child) {
+        return IconButton(
+          tooltip: 'Save this post',
+          icon: Icon(
+            _post.isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+            color: Theme.of(context).accentColor,
+          ),
+          onPressed: () {
+            postBloc.toggleBookmarkStatus(post: _post);
+          },
+        );
+      }),
+    );
+  }
+
   Widget _buildPostDetails() {
     return Column(
       children: <Widget>[
-        ListTile(
-          leading: Container(
-            height: 50.0,
-            width: 50.0,
-            child: _post != null
-                ? CachedNetworkImage(
-                    imageUrl: '${_post.profile.profileImageUrl}',
-                    placeholder: (context, imageUrl) => Center(
-                        child: CircularProgressIndicator(strokeWidth: 2.0)),
-                    errorWidget: (context, imageUrl, error) =>
-                        Center(child: Icon(Icons.error)),
-                    imageBuilder: (BuildContext context, ImageProvider image) {
-                      return Container(
-                        height: 50.0,
-                        width: 50.0,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          image:
-                              DecorationImage(image: image, fit: BoxFit.cover),
-                        ),
-                      );
-                    },
-                  )
-                : ClipRRect(
-                    borderRadius: BorderRadius.circular(25.0),
-                    child: Image.asset('assets/avatars/ps-avatar.png',
-                        fit: BoxFit.cover),
-                  ),
-          ),
-          title: Text('${_post.profile.firstName} ${_post.profile.lastName}',
-              style: TextStyle(fontWeight: FontWeight.bold)),
-          subtitle: Text(
-              '${DateFormat.yMMMMEEEEd().format(_post.lastUpdate.toDate())}'),
-          trailing: IconButton(
-            onPressed: () {
-              print('isFavorite');
-            },
-            icon: Icon(Icons.favorite, color: Colors.red),
-          ),
-        ),
-        ListTile(
-          title: Text('${_post.title}',
-              style: TextStyle(fontWeight: FontWeight.bold)),
-          subtitle:
-              Text('${_post.description}', overflow: TextOverflow.ellipsis),
-          trailing: IconButton(
-            tooltip: 'Save this post',
-            icon: Icon(
-              Icons.bookmark,
-              color: Theme.of(context).accentColor,
-            ),
-            onPressed: () {
-              print('post saved');
-            },
-          ),
-        ),
+        _buildUserListTile(),
+        _buildPostListTile(),
       ],
     );
   }

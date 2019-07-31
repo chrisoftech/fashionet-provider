@@ -4,8 +4,6 @@ export 'authentication/verification_form.dart';
 export 'category/categories.dart';
 export 'category/category_form.dart';
 
-export 'feed/post_feed.dart';
-
 export 'home/bottom_navbar.dart';
 export 'home/category_navbar.dart';
 export 'home/latest_posts.dart';
