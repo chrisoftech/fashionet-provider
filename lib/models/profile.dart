@@ -13,6 +13,7 @@ class Profile {
   final bool hasProfile;
   final dynamic created;
   final dynamic lastUpdate;
+  final bool isFollowing;
 
   Profile({
     @required this.userId,
@@ -27,5 +28,6 @@ class Profile {
     @required this.hasProfile,
     @required this.created,
     @required this.lastUpdate,
+    this.isFollowing = false,
   });
 }

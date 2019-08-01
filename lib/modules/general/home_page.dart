@@ -247,7 +247,7 @@ class _HomePageState extends State<HomePage> {
         if (_panelController.isPanelOpen()) {
           _panelController.close();
         } else {
-          _showExitAlertDialog();
+          return _showExitAlertDialog();
         }
       },
       child: Scaffold(
@@ -265,11 +265,11 @@ class _HomePageState extends State<HomePage> {
         bottomNavigationBar: BottomNavBar(
           activeIndex: _activePageIndex,
           onActiveIndexChange: (int index) {
-            setState(() {
-              _pageController.animateToPage(index,
-                  duration: Duration(milliseconds: 1000), curve: Curves.ease);
-            });
-            // setState(() => _pageController.jumpToPage(index));
+            // setState(() {
+            //   _pageController.animateToPage(index,
+            //       duration: Duration(milliseconds: 1000), curve: Curves.ease);
+            // });
+            setState(() => _pageController.jumpToPage(index));
           },
         ),
         body: SlidingUpPanel(

@@ -6,10 +6,12 @@ class PostRepository {
   // final Firestore _firestore;
   final FieldValue _firestoreTimestamp;
   final CollectionReference _postCollection;
+  final CollectionReference _profileCollection;
 
   PostRepository()
       : _firestoreTimestamp = FieldValue.serverTimestamp(),
-        _postCollection = Firestore.instance.collection('posts');
+        _postCollection = Firestore.instance.collection('posts'),
+        _profileCollection = Firestore.instance.collection('profiles');
 
   Future<bool> isBookmarked(
       {@required String postId, @required String userId}) async {
@@ -36,6 +38,35 @@ class PostRepository {
     return _postCollection
         .document(postId)
         .collection('bookmarks')
+        .document(userId)
+        .delete();
+  }
+
+  Future<bool> isFollowing(
+      {@required String postUserId, @required String userId}) async {
+    final DocumentSnapshot snapshot = await _profileCollection
+        .document(postUserId)
+        .collection('followers')
+        .document(userId)
+        .get();
+
+    return snapshot.exists;
+  }
+
+  Future<void> addToFollowers(
+      {@required String postUserId, @required String userId}) {
+    return _profileCollection
+        .document(postUserId)
+        .collection('followers')
+        .document(userId)
+        .setData({'isFollowing': true});
+  }
+
+  Future<void> removeFromFollowers(
+      {@required String postUserId, @required String userId}) {
+    return _profileCollection
+        .document(postUserId)
+        .collection('followers')
         .document(userId)
         .delete();
   }

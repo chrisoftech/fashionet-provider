@@ -19,7 +19,6 @@ class PostItemCardDefault extends StatefulWidget {
 
 class _PostItemCardDefaultState extends State<PostItemCardDefault> {
   int _currentPostImageIndex = 0;
-  bool _isFavorite = false;
 
   List<dynamic> get _postImages => widget.postImages;
   Post get _post => widget.post;
@@ -131,13 +130,69 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
     );
   }
 
+  Widget _buildFollowTrailingButton() {
+    final double _containerHeight = _post.profile.isFollowing ? 40.0 : 30.0;
+    final double _containerWidth = _post.profile.isFollowing ? 40.0 : 100.0;
+
+    return Consumer<PostBloc>(
+      builder: (BuildContext context, PostBloc postBloc, Widget child) {
+        return InkWell(
+          onTap: () {
+            postBloc.toggleFollowProfilePageStatus(currentPost: _post);
+          },
+          splashColor: Colors.black38,
+          borderRadius: BorderRadius.circular(15.0),
+          child: AnimatedContainer(
+            height: _containerHeight,
+            width: _containerWidth,
+            duration: Duration(milliseconds: 100),
+            padding: EdgeInsets.symmetric(vertical: 3.0, horizontal: 10.0),
+            decoration: BoxDecoration(
+              color: Colors.black12,
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                _post.profile.isFollowing
+                    ? Container()
+                    : Flexible(
+                        flex: 2,
+                        child: Text(
+                          'FOLLOW',
+                          style: TextStyle(
+                              color: Theme.of(context).primaryColor,
+                              fontWeight: FontWeight.w900),
+                        ),
+                      ),
+                SizedBox(width: _post.profile.isFollowing ? 0.0 : 5.0),
+                Flexible(
+                  child: Center(
+                    child: Icon(
+                      _post.profile.isFollowing
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                      size: 20.0,
+                      color: Colors.red,
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildUserListTile() {
     return ListTile(
       onTap: () {},
       leading: Container(
         height: 50.0,
         width: 50.0,
-        child: _post != null
+        child: _post != null || _post.profile.profileImageUrl.isEmpty
             ? CachedNetworkImage(
                 imageUrl: '${_post.profile.profileImageUrl}',
                 placeholder: (context, imageUrl) =>
@@ -165,17 +220,7 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
           style: TextStyle(fontWeight: FontWeight.bold)),
       subtitle:
           Text('${DateFormat.yMMMMEEEEd().format(_post.lastUpdate.toDate())}'),
-      trailing: IconButton(
-        onPressed: () {
-          print('isFavorite');
-
-          setState(() {
-            _isFavorite = !_isFavorite;
-          });
-        },
-        icon: Icon(_isFavorite ? Icons.favorite : Icons.favorite_border,
-            color: Colors.red),
-      ),
+      trailing: _buildFollowTrailingButton(),
     );
   }
 

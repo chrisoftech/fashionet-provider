@@ -276,10 +276,10 @@ class _CategoryFormState extends State<CategoryForm> {
       asset: _images[0],
     );
 
-    // fetch categories after creating
-    await _categoryBloc.fetchCategories();
-
     if (_isCategoryCreated) {
+      // fetch categories after creating
+      await _categoryBloc.fetchCategories();
+
       _showMessageSnackBar(
           content: 'Category is created sucessfully',
           icon: Icons.check,

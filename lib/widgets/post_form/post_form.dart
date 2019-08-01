@@ -605,6 +605,9 @@ class _PostFormState extends State<PostForm> {
     );
 
     if (_isPostCreated) {
+      // fetch posts after creating
+      await _postBloc.fetchPosts();
+
       _showMessageSnackBar(
           content: 'Post is created sucessfully',
           icon: Icons.check,

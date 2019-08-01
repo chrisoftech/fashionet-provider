@@ -74,7 +74,7 @@ class PostBloc with ChangeNotifier {
     final int _postIndex =
         _posts.indexWhere((Post post) => post.postId == _postId);
 
-    // update post in List<post>;
+    // update post in List<post> (optimistic update);
     _posts[_postIndex] = _updatedPost;
     notifyListeners();
 
@@ -87,6 +87,11 @@ class PostBloc with ChangeNotifier {
             postId: _postId, userId: _userId);
         print('Not Bookmarked');
       }
+
+      // set post bookmark in user collection
+      await _profileBloc.togglePostBookmarkStatus(post: post, userId: _userId);
+
+      return;
     } catch (e) {
       print(e.toString());
 
@@ -105,9 +110,131 @@ class PostBloc with ChangeNotifier {
         isBookmarked: !_newBookmarkStatus,
       );
 
-      // update post in List<post>;
+      // update post in List<post> (optimistic update);
       _posts[_postIndex] = _updatedPost;
       notifyListeners();
+    }
+  }
+
+  Future<void> toggleFollowProfilePageStatus(
+      {@required Post currentPost}) async {
+    final Profile _profile = currentPost.profile;
+
+    final String _currentUserId = await _authBloc.getUser;
+
+    final bool _followingStatus = _profile.isFollowing;
+    final bool _newFollowingStatus = !_followingStatus;
+
+    final Profile _updatedProfile = Profile(
+      userId: _profile.userId,
+      firstName: _profile.firstName,
+      lastName: _profile.lastName,
+      businessName: _profile.businessName,
+      businessDescription: _profile.businessDescription,
+      businessLocation: _profile.businessLocation,
+      phoneNumber: _profile.phoneNumber,
+      otherPhoneNumber: _profile.otherPhoneNumber,
+      profileImageUrl: _profile.profileImageUrl,
+      hasProfile: _profile.hasProfile,
+      created: _profile.created,
+      lastUpdate: _profile.lastUpdate,
+      isFollowing: _newFollowingStatus,
+    );
+
+    final List<Post> _userPosts =
+        _posts.where((Post post) => post.userId == currentPost.userId).toList();
+
+    _userPosts.forEach((Post post) {
+      final String _postId = post.postId;
+
+      final Post _updatedPost = Post(
+        userId: post.userId,
+        postId: post.postId,
+        title: post.title,
+        description: post.description,
+        price: post.price,
+        isAvailable: post.isAvailable,
+        imageUrls: post.imageUrls,
+        categories: post.categories,
+        created: post.created,
+        lastUpdate: post.lastUpdate,
+        profile: _updatedProfile, // update profile here
+        isBookmarked: post.isBookmarked,
+      );
+
+      final int _postIndex =
+          _posts.indexWhere((Post post) => post.postId == _postId);
+
+      // update post in List<post> (optimistic update);
+      _posts[_postIndex] = _updatedPost;
+      notifyListeners();
+    });
+
+    try {
+      if (_newFollowingStatus) {
+        await _postRepository.addToFollowers(
+            postUserId: currentPost.userId, userId: _currentUserId);
+        print('Following');
+      } else {
+        await _postRepository.removeFromFollowers(
+            postUserId: currentPost.userId, userId: _currentUserId);
+        print('Not Following');
+      }
+
+      // set user following in user collection
+      await _profileBloc.toggleFollowProfilePageStatus(
+          post: currentPost, userId: _currentUserId);
+
+      return;
+    } catch (e) {
+      print(e.toString());
+
+      final Profile _updatedProfile = Profile(
+        userId: _profile.userId,
+        firstName: _profile.firstName,
+        lastName: _profile.lastName,
+        businessName: _profile.businessName,
+        businessDescription: _profile.businessDescription,
+        businessLocation: _profile.businessLocation,
+        phoneNumber: _profile.phoneNumber,
+        otherPhoneNumber: _profile.otherPhoneNumber,
+        profileImageUrl: _profile.profileImageUrl,
+        hasProfile: _profile.hasProfile,
+        created: _profile.created,
+        lastUpdate: _profile.lastUpdate,
+        isFollowing: !_newFollowingStatus,
+      );
+
+      // get all posts with current post userId
+      final List<Post> _userPosts = _posts
+          .where((Post post) => post.userId == currentPost.userId)
+          .toList();
+
+      _userPosts.forEach((Post post) {
+        final String _postId = post.postId;
+
+        final Post _updatedPost = Post(
+          userId: post.userId,
+          postId: post.postId,
+          title: post.title,
+          description: post.description,
+          price: post.price,
+          isAvailable: post.isAvailable,
+          imageUrls: post.imageUrls,
+          categories: post.categories,
+          created: post.created,
+          lastUpdate: post.lastUpdate,
+          profile: _updatedProfile, // update profile here
+          isBookmarked: post.isBookmarked,
+        );
+
+        final int _postIndex =
+            _posts.indexWhere((Post post) => post.postId == _postId);
+
+        // update post in List<post> (optimistic update);
+        _posts[_postIndex] = _updatedPost;
+        notifyListeners();
+      });
     }
   }
 
@@ -155,6 +282,26 @@ class PostBloc with ChangeNotifier {
         final bool _isBookmarked = await _postRepository.isBookmarked(
             postId: _postId, userId: _currentUserId);
 
+        // get post user following status for current user
+        final bool _isFollowing = await _postRepository.isFollowing(
+            postUserId: _userId, userId: _currentUserId);
+
+        final Profile _updatedProfile = Profile(
+          userId: _profile.userId,
+          firstName: _profile.firstName,
+          lastName: _profile.lastName,
+          businessName: _profile.businessName,
+          businessDescription: _profile.businessDescription,
+          businessLocation: _profile.businessLocation,
+          phoneNumber: _profile.phoneNumber,
+          otherPhoneNumber: _profile.otherPhoneNumber,
+          profileImageUrl: _profile.profileImageUrl,
+          hasProfile: _profile.hasProfile,
+          created: _profile.created,
+          lastUpdate: _profile.lastUpdate,
+          isFollowing: _isFollowing,
+        );
+
         final _updatedPost = Post(
           userId: _userId,
           postId: _postId,
@@ -166,7 +313,7 @@ class PostBloc with ChangeNotifier {
           categories: document.data['categories'],
           created: document.data['created'],
           lastUpdate: document.data['lastUpdate'],
-          profile: _profile,
+          profile: _updatedProfile,
           isBookmarked: _isBookmarked,
         );
 
@@ -250,6 +397,26 @@ class PostBloc with ChangeNotifier {
         final bool _isBookmarked = await _postRepository.isBookmarked(
             postId: _postId, userId: _currentUserId);
 
+        // get post user following status for current user
+        final bool _isFollowing = await _postRepository.isFollowing(
+            postUserId: _userId, userId: _currentUserId);
+
+        final Profile _updatedProfile = Profile(
+          userId: _profile.userId,
+          firstName: _profile.firstName,
+          lastName: _profile.lastName,
+          businessName: _profile.businessName,
+          businessDescription: _profile.businessDescription,
+          businessLocation: _profile.businessLocation,
+          phoneNumber: _profile.phoneNumber,
+          otherPhoneNumber: _profile.otherPhoneNumber,
+          profileImageUrl: _profile.profileImageUrl,
+          hasProfile: _profile.hasProfile,
+          created: _profile.created,
+          lastUpdate: _profile.lastUpdate,
+          isFollowing: _isFollowing,
+        );
+
         final _updatedPost = Post(
           userId: _userId,
           postId: _postId,
@@ -261,7 +428,7 @@ class PostBloc with ChangeNotifier {
           categories: document.data['categories'],
           created: document.data['created'],
           lastUpdate: document.data['lastUpdate'],
-          profile: _profile,
+          profile: _updatedProfile,
           isBookmarked: _isBookmarked,
         );
 

@@ -18,6 +18,64 @@ class ProfileRepository {
     return _profileCollection.document(userId).get();
   }
 
+  Future<bool> isBookmarked(
+      {@required String postId, @required String userId}) async {
+    final DocumentSnapshot snapshot = await _profileCollection
+        .document(userId)
+        .collection('bookmarks')
+        .document(postId)
+        .get();
+
+    return snapshot.exists;
+  }
+
+  Future<void> addToBookmark(
+      {@required String postId, @required String userId}) {
+    return _profileCollection
+        .document(userId)
+        .collection('bookmarks')
+        .document(postId)
+        .setData({'isBookmarked': true});
+  }
+
+  Future<void> removeFromBookmark(
+      {@required String postId, @required String userId}) {
+    return _profileCollection
+        .document(userId)
+        .collection('bookmarks')
+        .document(postId)
+        .delete();
+  }
+
+  Future<bool> isFollowing(
+      {@required String postUserId, @required String userId}) async {
+    final DocumentSnapshot snapshot = await _profileCollection
+        .document(userId)
+        .collection('following')
+        .document(postUserId)
+        .get();
+
+    return snapshot.exists;
+  }
+
+  Future<void> addToFollowing(
+      {@required String postUserId, @required String userId}) {
+    return _profileCollection
+        .document(userId)
+        .collection('following')
+        .document(postUserId)
+        .setData({'isFollowing': true});
+  }
+
+  Future<void> removeFromFollowing(
+      {@required String postUserId, @required String userId}) {
+    return _profileCollection
+        .document(userId)
+        .collection('following')
+        .document(postUserId)
+        .delete();
+  }
+
   Future<void> createProfile(
       {@required String userId,
       @required String firstName,

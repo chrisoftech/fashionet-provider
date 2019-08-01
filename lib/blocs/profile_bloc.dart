@@ -43,6 +43,49 @@ class ProfileBloc with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> togglePostBookmarkStatus(
+      {@required Post post, @required String userId}) async {
+    final bool _bookmarkStatus = post.isBookmarked;
+    final bool _newBookmarkStatus = !_bookmarkStatus;
+
+    final String _postId = post.postId;
+
+    try {
+      if (_newBookmarkStatus) {
+        await _profileRepository.addToBookmark(postId: _postId, userId: userId);
+        print('Bookmarked user');
+      } else {
+        await _profileRepository.removeFromBookmark(
+            postId: _postId, userId: userId);
+        print('Not Bookmarked user');
+      }
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  Future<void> toggleFollowProfilePageStatus(
+      {@required Post post, @required String userId}) async {
+    final Profile _profile = post.profile;
+
+    final String _postUserId = post.userId;
+
+    final bool _followingStatus = _profile.isFollowing;
+    final bool _newFollowingStatus = !_followingStatus;
+
+    try {
+      if (_newFollowingStatus) {
+        await _profileRepository.addToFollowing(postUserId: _postUserId, userId: userId);
+        print('Following user');
+      } else {
+        await _profileRepository.removeFromFollowing(postUserId: _postUserId, userId: userId);
+        print('Not Following user');
+      }
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
   Future<Profile> fetchProfile({@required String userId}) async {
     DocumentSnapshot _snapshot =
         await _profileRepository.fetchProfile(userId: userId);
