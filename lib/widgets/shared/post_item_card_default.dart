@@ -67,7 +67,7 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
     return Positioned(
       left: 0.0,
       right: 0.0,
-      bottom: 00.0,
+      bottom: 0.0,
       child: Container(
         height: 70.0,
         decoration: BoxDecoration(
@@ -113,6 +113,28 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
         }).toList());
   }
 
+  Widget _buildPostPriceTag() {
+    return Positioned(
+      top: 20.0,
+      right: 20.0,
+      child: Container(
+        height: 30.0,
+        alignment: Alignment.center,
+        padding: EdgeInsets.symmetric(horizontal: 10.0),
+        decoration: BoxDecoration(
+          color: Colors.black54,
+          // shape: BoxShape.circle,
+          borderRadius: BorderRadius.circular(25.0),
+        ),
+        child: Text(
+          'GHC ${_post.price}',
+          style: TextStyle(
+              color: Colors.white, fontSize: 18.0, fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
+  }
+
   Widget _buildPostCardBackgroundImage() {
     return Stack(
       alignment: Alignment.center,
@@ -126,6 +148,7 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
         _post.imageUrls.length > 1
             ? _buildPostImageCarouselIndicator()
             : Container(),
+        _buildPostPriceTag()
       ],
     );
   }
