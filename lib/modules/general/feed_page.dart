@@ -43,7 +43,6 @@ class _FeedPageState extends State<FeedPage> {
           return index >= postBloc.posts.length
               ? BottomLoader()
               : PostItemCardDefault(
-                  postImages: postBloc.posts[index].imageUrls,
                   post: postBloc.posts[index]);
         },
         childCount: postBloc.morePostsAvailable

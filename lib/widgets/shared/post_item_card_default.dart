@@ -7,12 +7,9 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class PostItemCardDefault extends StatefulWidget {
-  final List<dynamic> postImages;
   final Post post;
 
-  const PostItemCardDefault(
-      {Key key, @required this.postImages, @required this.post})
-      : super(key: key);
+  const PostItemCardDefault({Key key, @required this.post}) : super(key: key);
   @override
   _PostItemCardDefaultState createState() => _PostItemCardDefaultState();
 }
@@ -20,7 +17,6 @@ class PostItemCardDefault extends StatefulWidget {
 class _PostItemCardDefaultState extends State<PostItemCardDefault> {
   int _currentPostImageIndex = 0;
 
-  List<dynamic> get _postImages => widget.postImages;
   Post get _post => widget.post;
 
   Widget _buildActivePostImage() {
@@ -116,15 +112,17 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
   Widget _buildPostPriceTag() {
     return Positioned(
       top: 20.0,
-      right: 20.0,
+      right: 0.0,
       child: Container(
         height: 30.0,
         alignment: Alignment.center,
         padding: EdgeInsets.symmetric(horizontal: 10.0),
         decoration: BoxDecoration(
           color: Colors.black54,
-          // shape: BoxShape.circle,
-          borderRadius: BorderRadius.circular(25.0),
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(15.0),
+              bottomLeft: Radius.circular(15.0)),
+          // borderRadius: BorderRadius.circular(25.0),
         ),
         child: Text(
           'GHC ${_post.price}',
@@ -140,7 +138,7 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
       alignment: Alignment.center,
       children: <Widget>[
         Container(
-          child: _postImages.length > 0
+          child: _post.imageUrls.length > 0
               ? _buildPostImageCarousel()
               : Image.asset('assets/avatars/bg-avatar.png', fit: BoxFit.cover),
         ),
@@ -215,7 +213,7 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
       leading: Container(
         height: 50.0,
         width: 50.0,
-        child: _post != null || _post.profile.profileImageUrl.isEmpty
+        child: _post != null && _post.profile.profileImageUrl.isNotEmpty
             ? CachedNetworkImage(
                 imageUrl: '${_post.profile.profileImageUrl}',
                 placeholder: (context, imageUrl) =>

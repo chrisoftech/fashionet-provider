@@ -1,4 +1,3 @@
-
 import 'package:fashionet_provider/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -106,7 +105,8 @@ class SearchForm extends StatelessWidget {
                       child: ListView.builder(
                         itemCount: 9,
                         itemBuilder: (BuildContext context, int index) {
-                          return PostItemCardSmall(postIndex: index);
+                          // return PostItemCardSmall(postIndex: index);
+                          return Container();
                         },
                       ),
                     )

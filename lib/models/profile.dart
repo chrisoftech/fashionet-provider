@@ -30,4 +30,36 @@ class Profile {
     @required this.lastUpdate,
     this.isFollowing = false,
   });
+
+  Profile copyWith({
+    String userId,
+    String firstName,
+    String lastName,
+    String businessName,
+    String businessDescription,
+    String businessLocation,
+    String phoneNumber,
+    String otherPhoneNumber,
+    String profileImageUrl,
+    bool hasProfile,
+    dynamic created,
+    dynamic lastUpdate,
+    isFollowing = false,
+  }) {
+    return Profile(
+      userId: userId ?? this.userId,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      businessName: businessName ?? this.businessName,
+      businessDescription: businessDescription ?? this.businessDescription,
+      businessLocation: businessLocation ?? this.businessLocation,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      otherPhoneNumber: otherPhoneNumber ?? this.otherPhoneNumber,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+      hasProfile: hasProfile ?? this.hasProfile,
+      created: created ?? this.created,
+      lastUpdate: lastUpdate ?? this.lastUpdate,
+      isFollowing: isFollowing ?? this.isFollowing,
+    );
+  }
 }

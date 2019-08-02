@@ -143,7 +143,8 @@ class _SuggestedPostsState extends State<SuggestedPosts> {
                     itemBuilder: (BuildContext context, int index) {
                       final int postIndex = index == 0 ? 9 : index;
 
-                      return PostItemCardSmall(postIndex: postIndex);
+                      // return PostItemCardSmall(postIndex: postIndex);
+                      return Container();
                     },
                   ),
                 ),

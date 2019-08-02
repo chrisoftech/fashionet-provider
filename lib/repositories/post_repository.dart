@@ -30,7 +30,9 @@ class PostRepository {
         .document(postId)
         .collection('bookmarks')
         .document(userId)
-        .setData({'isBookmarked': true});
+        .setData({
+      'isBookmarked': true,
+    });
   }
 
   Future<void> removeFromBookmark(
@@ -42,33 +44,9 @@ class PostRepository {
         .delete();
   }
 
-  Future<bool> isFollowing(
-      {@required String postUserId, @required String userId}) async {
-    final DocumentSnapshot snapshot = await _profileCollection
-        .document(postUserId)
-        .collection('followers')
-        .document(userId)
-        .get();
-
-    return snapshot.exists;
-  }
-
-  Future<void> addToFollowers(
-      {@required String postUserId, @required String userId}) {
-    return _profileCollection
-        .document(postUserId)
-        .collection('followers')
-        .document(userId)
-        .setData({'isFollowing': true});
-  }
-
-  Future<void> removeFromFollowers(
-      {@required String postUserId, @required String userId}) {
-    return _profileCollection
-        .document(postUserId)
-        .collection('followers')
-        .document(userId)
-        .delete();
+ 
+  Future<DocumentSnapshot> getPost({@required String postId}) {
+    return _postCollection.document(postId).get();
   }
 
   Future<QuerySnapshot> fetchPosts({@required Post lastVisiblePost}) {

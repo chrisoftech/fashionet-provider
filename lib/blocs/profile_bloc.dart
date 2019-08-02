@@ -75,10 +75,12 @@ class ProfileBloc with ChangeNotifier {
 
     try {
       if (_newFollowingStatus) {
-        await _profileRepository.addToFollowing(postUserId: _postUserId, userId: userId);
+        await _profileRepository.addToFollowing(
+            postUserId: _postUserId, userId: userId);
         print('Following user');
       } else {
-        await _profileRepository.removeFromFollowing(postUserId: _postUserId, userId: userId);
+        await _profileRepository.removeFromFollowing(
+            postUserId: _postUserId, userId: userId);
         print('Not Following user');
       }
     } catch (e) {
@@ -139,11 +141,8 @@ class ProfileBloc with ChangeNotifier {
         profileImageUrl: _profileImageUrl,
       );
 
-      // await Future.delayed(Duration(seconds: 5));
-
       _profileState = ProfileState.Success;
       notifyListeners();
-
       return true;
     } catch (e) {
       print(e.toString());

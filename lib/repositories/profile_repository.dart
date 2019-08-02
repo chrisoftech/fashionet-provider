@@ -35,7 +35,10 @@ class ProfileRepository {
         .document(userId)
         .collection('bookmarks')
         .document(postId)
-        .setData({'isBookmarked': true});
+        .setData({
+      'isBookmarked': true,
+      'lastUpdate': _firestoreTimestamp,
+    });
   }
 
   Future<void> removeFromBookmark(
@@ -75,6 +78,44 @@ class ProfileRepository {
         .document(postUserId)
         .delete();
   }
+
+   Future<bool> isFollower(
+      {@required String postUserId, @required String userId}) async {
+    final DocumentSnapshot snapshot = await _profileCollection
+        .document(postUserId)
+        .collection('followers')
+        .document(userId)
+        .get();
+
+    return snapshot.exists;
+  }
+
+  Future<void> addToFollowers(
+      {@required String postUserId, @required String userId}) {
+    return _profileCollection
+        .document(postUserId)
+        .collection('followers')
+        .document(userId)
+        .setData({'isFollowing': true});
+  }
+
+  Future<void> removeFromFollowers(
+      {@required String postUserId, @required String userId}) {
+    return _profileCollection
+        .document(postUserId)
+        .collection('followers')
+        .document(userId)
+        .delete();
+  }
+
+  Future<QuerySnapshot> fetchBookmarkedPosts({@required String userId}) {
+    return _profileCollection
+        .document(userId)
+        .collection('bookmarks')
+        .orderBy('lastUpdate', descending: true)
+        .getDocuments();
+  }
+
 
   Future<void> createProfile(
       {@required String userId,
