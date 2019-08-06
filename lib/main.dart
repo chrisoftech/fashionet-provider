@@ -1,4 +1,5 @@
 import 'package:fashionet_provider/blocs/blocs.dart';
+import 'package:fashionet_provider/models/models.dart';
 import 'package:fashionet_provider/modules/modules.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -35,6 +36,46 @@ class MyApp extends StatelessWidget {
         routes: <String, WidgetBuilder>{
           '/home': (BuildContext context) => HomePage(),
           '/category-form': (BuildContext context) => CategoryForm(),
+        },
+        onGenerateRoute: (RouteSettings settings) {
+          final List<String> pathElements = settings.name.split('/');
+
+          if (pathElements[0] != '') {
+            return null;
+          }
+
+          if (pathElements[1] == 'post') {
+            final String _postId = pathElements[2];
+
+            return MaterialPageRoute(builder: (BuildContext context) {
+              return Consumer<PostBloc>(
+                builder:
+                    (BuildContext context, PostBloc postBloc, Widget child) {
+                  final Post _post = postBloc.posts
+                      .firstWhere((Post post) => post.postId == _postId);
+
+                  return PostDetails(post: _post);
+                },
+              );
+            });
+          }
+
+          if (pathElements[1] == 'bookmark') {
+            final String _postId = pathElements[2];
+
+            return MaterialPageRoute(builder: (BuildContext context) {
+              return Consumer<PostBloc>(
+                builder:
+                    (BuildContext context, PostBloc postBloc, Widget child) {
+                  final Post _bookmarkedpost = postBloc.bookmarkedPosts
+                      .firstWhere((Post post) => post.postId == _postId);
+
+                  return PostDetails(post: _bookmarkedpost);
+                },
+              );
+            });
+          }
+          return null;
         },
       ),
     );

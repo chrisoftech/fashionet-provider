@@ -45,7 +45,7 @@ class BookmarkPage extends StatelessWidget {
                         child: Column(
                           children: <Widget>[
                             SizedBox(height: 50.0),
-                            Text('No Post(s) Loaded'),
+                            Text('No Bookmarked Post(s) Loaded'),
                           ],
                         ),
                       )

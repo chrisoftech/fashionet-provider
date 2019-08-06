@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fashionet_provider/blocs/blocs.dart';
 import 'package:fashionet_provider/models/models.dart';
+import 'package:fashionet_provider/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:intl/intl.dart';
@@ -97,9 +98,12 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
                 errorWidget: (context, imageUrl, error) =>
                     Center(child: Icon(Icons.error)),
                 imageBuilder: (BuildContext context, ImageProvider image) {
-                  return Container(
-                    decoration: BoxDecoration(
-                      image: DecorationImage(image: image, fit: BoxFit.cover),
+                  return Hero(
+                    tag: '${_post.postId}_${_post.imageUrls[0]}',
+                    child: Container(
+                      decoration: BoxDecoration(
+                        image: DecorationImage(image: image, fit: BoxFit.cover),
+                      ),
                     ),
                   );
                 },
@@ -221,12 +225,15 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
                 errorWidget: (context, imageUrl, error) =>
                     Center(child: Icon(Icons.error)),
                 imageBuilder: (BuildContext context, ImageProvider image) {
-                  return Container(
-                    height: 50.0,
-                    width: 50.0,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: DecorationImage(image: image, fit: BoxFit.cover),
+                  return Hero(
+                    tag: '${_post.postId}_${_post.profile.profileImageUrl}',
+                    child: Container(
+                      height: 50.0,
+                      width: 50.0,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: DecorationImage(image: image, fit: BoxFit.cover),
+                      ),
                     ),
                   );
                 },
@@ -286,13 +293,7 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
           elevation: 8.0,
           child: InkWell(
             onTap: () {
-              // Navigator.of(context).pushNamed('/post-details');
-              // Navigator.push(
-              //     context,
-              //     MaterialPageRoute(
-              //         builder: (BuildContext context) => PostDetailsPage(
-              //               postImages: _postImages,
-              //             )));
+              Navigator.of(context).pushNamed('/post/${_post.postId}');
             },
             child: Container(
               width: _contentWidth,

@@ -3,7 +3,6 @@ import 'package:fashionet_provider/blocs/blocs.dart';
 import 'package:fashionet_provider/models/models.dart';
 import 'package:fashionet_provider/repositories/repositories.dart';
 import 'package:flutter/foundation.dart';
-import 'package:intl/intl.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 
 enum PostState { Default, Loading, Success, Failure }
@@ -58,12 +57,12 @@ class PostBloc with ChangeNotifier {
     }
   }
 
-  Future<Post> _getPost({String postId, DocumentSnapshot document}) async {
+  Future<Post> _getBookmarkPost({String postId}) async {
     final String _currentUserId = await _authBloc.getUser; // get current-user
 
-    DocumentSnapshot _document = postId == null
-        ? document
-        : await _postRepository.getPost(postId: postId);
+    DocumentSnapshot _document = await _postRepository.getPost(postId: postId);
+
+    print('Get bookmarkPost');
 
     final String _postId = _document.documentID;
     final String _userId = _document.data['userId'];
@@ -92,6 +91,52 @@ class PostBloc with ChangeNotifier {
     // get post user following status for current user
     final bool _isFollowing = await _profileRepository.isFollowing(
         postUserId: _userId, userId: _currentUserId);
+
+    // print('isBookmarked: ${document.documentID} $_isBookmarked');
+    // print('isFollowing: ${document.documentID} $_isFollowing');
+
+    return _post.copyWith(
+        isBookmarked: _isBookmarked,
+        profile: _profile.copyWith(isFollowing: _isFollowing));
+  }
+
+  Future<Post> _getPost({DocumentSnapshot document}) async {
+    final String _currentUserId = await _authBloc.getUser; // get current-user
+
+    DocumentSnapshot _document = document;
+
+    print('Get post');
+
+    final String _postId = _document.documentID;
+    final String _userId = _document.data['userId'];
+
+    final Profile _profile = await _profileBloc.fetchProfile(
+        userId: _userId); // fetch user for current post
+
+    final _post = Post(
+      userId: _userId,
+      postId: _postId,
+      title: _document.data['title'],
+      description: _document.data['description'],
+      price: _document.data['price'],
+      isAvailable: _document.data['isAvailable'],
+      imageUrls: _document.data['imageUrls'],
+      categories: _document.data['categories'],
+      created: _document.data['created'],
+      lastUpdate: _document.data['lastUpdate'],
+      profile: _profile,
+    );
+
+    // get post bookmark status for current user
+    final bool _isBookmarked = await _postRepository.isBookmarked(
+        postId: _postId, userId: _currentUserId);
+
+    // get post user following status for current user
+    final bool _isFollowing = await _profileRepository.isFollowing(
+        postUserId: _userId, userId: _currentUserId);
+
+    print('isBookmarked: ${document.documentID} $_isBookmarked');
+    print('isFollowing: ${document.documentID} $_isFollowing');
 
     return _post.copyWith(
         isBookmarked: _isBookmarked,
@@ -232,14 +277,14 @@ class PostBloc with ChangeNotifier {
       for (int i = 0; i < _snapshot.documents.length; i++) {
         final DocumentSnapshot document = _snapshot.documents[i];
         final String _postId = document.documentID;
-        final Post _post = await _getPost(postId: _postId);
+        final Post _post = await _getBookmarkPost(postId: _postId);
 
         posts.add(_post);
       }
 
       _bookmarkedPosts = posts;
 
-      _bookmarkPostState = PostState.Failure;
+      _bookmarkPostState = PostState.Success;
       notifyListeners();
       return;
     } catch (e) {
@@ -261,8 +306,11 @@ class PostBloc with ChangeNotifier {
       List<Post> posts = [];
 
       for (int i = 0; i < _snapshot.documents.length; i++) {
+        print('post snapshot legth: ${_snapshot.documents.length}');
         final DocumentSnapshot document = _snapshot.documents[i];
         final Post _post = await _getPost(document: document);
+
+        print('post $i: ${_post != null ? 'Exists' : 'Not Exist'}');
 
         posts.add(_post);
       }

@@ -9,6 +9,8 @@ export 'home/category_navbar.dart';
 export 'home/latest_posts.dart';
 export 'home/suggested_posts.dart';
 
+export 'post_details/post_details.dart';
+
 export 'post_form/post_form.dart';
 
 export 'profile/profile_form.dart';

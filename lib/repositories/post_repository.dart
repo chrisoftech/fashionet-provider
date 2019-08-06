@@ -6,12 +6,10 @@ class PostRepository {
   // final Firestore _firestore;
   final FieldValue _firestoreTimestamp;
   final CollectionReference _postCollection;
-  final CollectionReference _profileCollection;
 
   PostRepository()
       : _firestoreTimestamp = FieldValue.serverTimestamp(),
-        _postCollection = Firestore.instance.collection('posts'),
-        _profileCollection = Firestore.instance.collection('profiles');
+        _postCollection = Firestore.instance.collection('posts');
 
   Future<bool> isBookmarked(
       {@required String postId, @required String userId}) async {

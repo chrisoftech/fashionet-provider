@@ -108,34 +108,45 @@ class PostItemCardSmall extends StatelessWidget {
       width: postImageContainerWidth,
       child: Stack(
         children: <Widget>[
-          Card(
-            elevation: 3.0,
+          Material(
+            elevation: 5.0,
             color: Colors.transparent,
-            child: _bookmarkPost != null && _bookmarkPost.imageUrls.isNotEmpty
-                ? CachedNetworkImage(
-                    imageUrl: '${_bookmarkPost.imageUrls[0]}',
-                    placeholder: (context, imageUrl) => Center(
-                        child: CircularProgressIndicator(strokeWidth: 2.0)),
-                    errorWidget: (context, imageUrl, error) =>
-                        Center(child: Icon(Icons.error)),
-                    imageBuilder: (BuildContext context, ImageProvider image) {
-                      return Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10.0),
-                          image:
-                              DecorationImage(image: image, fit: BoxFit.cover),
-                        ),
-                      );
-                    },
-                  )
-                : Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10.0),
-                      image: DecorationImage(
-                          image: AssetImage('assets/avatars/bg-avatar.png'),
-                          fit: BoxFit.cover),
+            borderRadius: BorderRadius.circular(10.0),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              child: _bookmarkPost != null && _bookmarkPost.imageUrls.isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl: '${_bookmarkPost.imageUrls[0]}',
+                      placeholder: (context, imageUrl) => Center(
+                          child: CircularProgressIndicator(strokeWidth: 2.0)),
+                      errorWidget: (context, imageUrl, error) =>
+                          Center(child: Icon(Icons.error)),
+                      imageBuilder:
+                          (BuildContext context, ImageProvider image) {
+                        return Hero(
+                          tag:
+                              '${_bookmarkPost.postId}_${_bookmarkPost.imageUrls[0]}',
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10.0),
+                              image: DecorationImage(
+                                  image: image, fit: BoxFit.cover),
+                            ),
+                          ),
+                        );
+                      },
+                    )
+                  : Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10.0),
+                        image: DecorationImage(
+                            image: AssetImage('assets/avatars/bg-avatar.png'),
+                            fit: BoxFit.cover),
+                      ),
                     ),
-                  ),
+            ),
           ),
           Align(
             alignment: Alignment.bottomCenter,
@@ -148,14 +159,18 @@ class PostItemCardSmall extends StatelessWidget {
                     errorWidget: (context, imageUrl, error) =>
                         Center(child: Icon(Icons.error)),
                     imageBuilder: (BuildContext context, ImageProvider image) {
-                      return Container(
-                        height: 50.0,
-                        width: 50.0,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2.0),
-                          image:
-                              DecorationImage(image: image, fit: BoxFit.cover),
+                      return Hero(
+                        tag:
+                            '${_bookmarkPost.postId}_${_bookmarkPost.profile.profileImageUrl}',
+                        child: Container(
+                          height: 50.0,
+                          width: 50.0,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2.0),
+                            image: DecorationImage(
+                                image: image, fit: BoxFit.cover),
+                          ),
                         ),
                       );
                     },
@@ -173,30 +188,32 @@ class PostItemCardSmall extends StatelessWidget {
                     ),
                   ),
           ),
-          Align(
-            alignment: Alignment.topRight,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Container(
-                  height: 30.0,
-                  alignment: Alignment.center,
-                  padding: EdgeInsets.symmetric(horizontal: 10.0),
-                  decoration: BoxDecoration(
-                    color: Colors.black12,
-                    borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(15.0),
-                        bottomLeft: Radius.circular(15.0)),
+          bookmarkPost.imageUrls.length == 1
+              ? Container()
+              : Align(
+                  alignment: Alignment.topRight,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Container(
+                        height: 30.0,
+                        alignment: Alignment.center,
+                        padding: EdgeInsets.symmetric(horizontal: 10.0),
+                        decoration: BoxDecoration(
+                          color: Colors.black12,
+                          borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(15.0),
+                              bottomLeft: Radius.circular(15.0)),
+                        ),
+                        child: Text(
+                          '+ ${bookmarkPost.imageUrls.length - 1}',
+                          style: TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.w900),
+                        ),
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    '+ ${bookmarkPost.imageUrls.length - 1}',
-                    style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.w900),
-                  ),
-                ),
-              ],
-            ),
-          )
+                )
         ],
       ),
     );
@@ -240,7 +257,9 @@ class PostItemCardSmall extends StatelessWidget {
       children: <Widget>[
         Material(
           child: InkWell(
-            onTap: () {},
+            onTap: () {
+              Navigator.of(context).pushNamed('/bookmark/${_bookmarkPost.postId}');
+            },
             child: Container(
               height: _containerHeight,
               width: _containerWidth,
