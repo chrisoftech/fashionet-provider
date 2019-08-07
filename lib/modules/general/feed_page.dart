@@ -84,8 +84,21 @@ class _FeedPageState extends State<FeedPage> {
                               child: Column(
                                 children: <Widget>[
                                   SizedBox(height: 50.0),
+                                  FlatButton(
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: <Widget>[
+                                        Icon(Icons.refresh),
+                                        Text('refresh'),
+                                      ],
+                                    ),
+                                    onPressed: () {
+                                      postBloc.fetchPosts();
+                                    },
+                                  ),
                                   Text('No Post(s) Loaded'),
-                                  Text('Drag-down to refresh page'),
                                 ],
                               ),
                             )

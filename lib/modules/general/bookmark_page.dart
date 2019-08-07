@@ -36,6 +36,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
     return Scaffold(
       body: Consumer<PostBloc>(
           builder: (BuildContext context, PostBloc postBloc, Widget child) {
+            
         return RefreshIndicator(
           onRefresh: () async {
             setState(() => _isRefreshing = true);
@@ -60,8 +61,21 @@ class _BookmarkPageState extends State<BookmarkPage> {
                               child: Column(
                                 children: <Widget>[
                                   SizedBox(height: 50.0),
+                                  FlatButton(
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: <Widget>[
+                                        Icon(Icons.refresh),
+                                        Text('refresh'),
+                                      ],
+                                    ),
+                                    onPressed: () {
+                                      postBloc.fetchBookmarkedPosts();
+                                    },
+                                  ),
                                   Text('No Bookmarked Post(s) Loaded'),
-                                  Text('Drag-down to refresh page'),
                                 ],
                               ),
                             )
