@@ -361,6 +361,8 @@ class _ProfileFormState extends State<ProfileForm> {
           content: 'Profile is created sucessfully',
           icon: Icons.check,
           isError: false);
+
+      _profileBloc.fetchUserProfile(); // fetch user profile
     } else {
       _showMessageSnackBar(
           content: 'Sorry! Something went wrong! Try again',

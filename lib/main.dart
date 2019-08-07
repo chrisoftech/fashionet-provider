@@ -131,16 +131,19 @@ class _DynamicInitialPageState extends State<DynamicInitialPage> {
   }
 
   Widget _displayedAuthenticatedPage({@required ProfileBloc profileBloc}) {
-    return _hasProfile
-        ? HomePage()
-        // : ProfileFormPage();
-        : ProfileForm();
+    if (_hasProfile) {
+      profileBloc.fetchUserProfile(); // fetch user profile
+      return HomePage();
+    } else {
+      return ProfileForm();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     // final AuthBloc _authBloc = Provider.of<AuthBloc>(context);
-    final ProfileBloc _profileBloc = Provider.of<ProfileBloc>(context);
+    final ProfileBloc _profileBloc =
+        Provider.of<ProfileBloc>(context);
 
     return Consumer<AuthBloc>(
       builder: (BuildContext context, AuthBloc authBloc, Widget child) {

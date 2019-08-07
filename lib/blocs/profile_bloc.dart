@@ -23,7 +23,7 @@ class ProfileBloc with ChangeNotifier {
       : _profileRepository = ProfileRepository(),
         _imageRepository = ImageRepository(),
         _authBloc = AuthBloc.instance() {
-    _fetchUserProfile();
+    fetchUserProfile();
   }
 
   // getters
@@ -106,10 +106,10 @@ class ProfileBloc with ChangeNotifier {
     }
   }
 
-  Future<void> _fetchUserProfile() async {
+  Future<void> fetchUserProfile() async {
     try {
-      _userProfileState = ProfileState.Loading;
-      notifyListeners();
+      // _userProfileState = ProfileState.Loading;
+      // notifyListeners();
 
       final String _userId = await _authBloc.getUser;
       DocumentSnapshot _snapshot =
@@ -136,14 +136,14 @@ class ProfileBloc with ChangeNotifier {
       );
 
       setUserProfile(userProfile: _userProfile);
-      _userProfileState = ProfileState.Success;
-      notifyListeners();
+      // _userProfileState = ProfileState.Success;
+      // notifyListeners();
       return;
     } catch (e) {
       print(e.toString());
 
-      _userProfileState = ProfileState.Failure;
-      notifyListeners();
+      // _userProfileState = ProfileState.Failure;
+      // notifyListeners();
       return;
     }
   }
