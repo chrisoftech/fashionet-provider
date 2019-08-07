@@ -14,6 +14,9 @@ export 'post_details/post_details.dart';
 export 'post_form/post_form.dart';
 
 export 'profile/profile_form.dart';
+export 'profile/profile_navbar.dart';
+export 'profile/profile_tabpage.dart';
+export 'profile/subscription_tabpage.dart';
 
 export 'shared/post_item_card_default.dart';
 export 'shared/post_item_card_large.dart';

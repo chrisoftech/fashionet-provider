@@ -5,13 +5,26 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-class PostItemCardSmall extends StatelessWidget {
+class PostItemCardSmall extends StatefulWidget {
   final Post bookmarkPost;
 
   const PostItemCardSmall({Key key, @required this.bookmarkPost})
       : super(key: key);
 
-  Post get _bookmarkPost => bookmarkPost;
+  @override
+  _PostItemCardSmallState createState() => _PostItemCardSmallState();
+}
+
+class _PostItemCardSmallState extends State<PostItemCardSmall> {
+  Post get _bookmarkPost => widget.bookmarkPost;
+
+  void _navigateToPostDetailsPage() {
+    Navigator.of(context).pushNamed('/bookmark/${_bookmarkPost.postId}');
+  }
+
+  void _navigateToProfilePage() {
+    Navigator.of(context).pushNamed('/post-profile/${_bookmarkPost.postId}');
+  }
 
   Widget _buildPostPriceTag({@required BuildContext context}) {
     return Row(
@@ -82,6 +95,7 @@ class PostItemCardSmall extends StatelessWidget {
               ),
               Expanded(
                 child: ListTile(
+                  onTap: () => _navigateToProfilePage(),
                   title: Text(
                       'by ${_bookmarkPost.profile.firstName} ${_bookmarkPost.profile.lastName}'),
                   subtitle: Text(
@@ -98,7 +112,128 @@ class PostItemCardSmall extends StatelessWidget {
     );
   }
 
-  Widget _buildPostImage(
+  Widget _buildPostImage() {
+    return Material(
+      elevation: 5.0,
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(10.0),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        child: _bookmarkPost != null && _bookmarkPost.imageUrls.isNotEmpty
+            ? CachedNetworkImage(
+                imageUrl: '${_bookmarkPost.imageUrls[0]}',
+                placeholder: (context, imageUrl) =>
+                    Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
+                errorWidget: (context, imageUrl, error) =>
+                    Center(child: Icon(Icons.error)),
+                imageBuilder: (BuildContext context, ImageProvider image) {
+                  return Hero(
+                    tag:
+                        '${_bookmarkPost.postId}_${_bookmarkPost.imageUrls[0]}',
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10.0),
+                        image: DecorationImage(image: image, fit: BoxFit.cover),
+                      ),
+                    ),
+                  );
+                },
+              )
+            : Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10.0),
+                  image: DecorationImage(
+                      image: AssetImage('assets/avatars/bg-avatar.png'),
+                      fit: BoxFit.cover),
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildProfileAvatar() {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: _bookmarkPost != null &&
+              _bookmarkPost.profile.profileImageUrl.isNotEmpty
+          ? CachedNetworkImage(
+              imageUrl: '${_bookmarkPost.profile.profileImageUrl}',
+              placeholder: (context, imageUrl) =>
+                  Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
+              errorWidget: (context, imageUrl, error) =>
+                  Center(child: Icon(Icons.error)),
+              imageBuilder: (BuildContext context, ImageProvider image) {
+                return Hero(
+                  tag:
+                      '${_bookmarkPost.postId}_${_bookmarkPost.profile.profileImageUrl}',
+                  child: Material(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(25.0),
+                    child: InkWell(
+                      onTap: () => _navigateToProfilePage(),
+                      borderRadius: BorderRadius.circular(25.0),
+                      child: Container(
+                        height: 50.0,
+                        width: 50.0,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2.0),
+                          image:
+                              DecorationImage(image: image, fit: BoxFit.cover),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            )
+          : Container(
+              height: 50.0,
+              width: 50.0,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10.0),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2.0),
+                image: DecorationImage(
+                    image: AssetImage('assets/avatars/ps-avatar.png'),
+                    fit: BoxFit.cover),
+              ),
+            ),
+    );
+  }
+
+  Widget _buildPostImageCount() {
+    return widget.bookmarkPost.imageUrls.length == 1
+        ? Container()
+        : Align(
+            alignment: Alignment.topRight,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Container(
+                  height: 30.0,
+                  alignment: Alignment.center,
+                  padding: EdgeInsets.symmetric(horizontal: 10.0),
+                  decoration: BoxDecoration(
+                    color: Colors.black12,
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(15.0),
+                        bottomLeft: Radius.circular(15.0)),
+                  ),
+                  child: Text(
+                    '+ ${widget.bookmarkPost.imageUrls.length - 1}',
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.w900),
+                  ),
+                ),
+              ],
+            ),
+          );
+  }
+
+  Widget _buildPostImageStack(
       {@required double postContainerHeight,
       @required double postImageContainerWidth}) {
     return Positioned(
@@ -108,112 +243,9 @@ class PostItemCardSmall extends StatelessWidget {
       width: postImageContainerWidth,
       child: Stack(
         children: <Widget>[
-          Material(
-            elevation: 5.0,
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(10.0),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              child: _bookmarkPost != null && _bookmarkPost.imageUrls.isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: '${_bookmarkPost.imageUrls[0]}',
-                      placeholder: (context, imageUrl) => Center(
-                          child: CircularProgressIndicator(strokeWidth: 2.0)),
-                      errorWidget: (context, imageUrl, error) =>
-                          Center(child: Icon(Icons.error)),
-                      imageBuilder:
-                          (BuildContext context, ImageProvider image) {
-                        return Hero(
-                          tag:
-                              '${_bookmarkPost.postId}_${_bookmarkPost.imageUrls[0]}',
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10.0),
-                              image: DecorationImage(
-                                  image: image, fit: BoxFit.cover),
-                            ),
-                          ),
-                        );
-                      },
-                    )
-                  : Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10.0),
-                        image: DecorationImage(
-                            image: AssetImage('assets/avatars/bg-avatar.png'),
-                            fit: BoxFit.cover),
-                      ),
-                    ),
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: _bookmarkPost != null &&
-                    _bookmarkPost.profile.profileImageUrl.isNotEmpty
-                ? CachedNetworkImage(
-                    imageUrl: '${_bookmarkPost.profile.profileImageUrl}',
-                    placeholder: (context, imageUrl) => Center(
-                        child: CircularProgressIndicator(strokeWidth: 2.0)),
-                    errorWidget: (context, imageUrl, error) =>
-                        Center(child: Icon(Icons.error)),
-                    imageBuilder: (BuildContext context, ImageProvider image) {
-                      return Hero(
-                        tag:
-                            '${_bookmarkPost.postId}_${_bookmarkPost.profile.profileImageUrl}',
-                        child: Container(
-                          height: 50.0,
-                          width: 50.0,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2.0),
-                            image: DecorationImage(
-                                image: image, fit: BoxFit.cover),
-                          ),
-                        ),
-                      );
-                    },
-                  )
-                : Container(
-                    height: 50.0,
-                    width: 50.0,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10.0),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2.0),
-                      image: DecorationImage(
-                          image: AssetImage('assets/avatars/ps-avatar.png'),
-                          fit: BoxFit.cover),
-                    ),
-                  ),
-          ),
-          bookmarkPost.imageUrls.length == 1
-              ? Container()
-              : Align(
-                  alignment: Alignment.topRight,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Container(
-                        height: 30.0,
-                        alignment: Alignment.center,
-                        padding: EdgeInsets.symmetric(horizontal: 10.0),
-                        decoration: BoxDecoration(
-                          color: Colors.black12,
-                          borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(15.0),
-                              bottomLeft: Radius.circular(15.0)),
-                        ),
-                        child: Text(
-                          '+ ${bookmarkPost.imageUrls.length - 1}',
-                          style: TextStyle(
-                              color: Colors.white, fontWeight: FontWeight.w900),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
+          _buildPostImage(),
+          _buildProfileAvatar(),
+          _buildPostImageCount(),
         ],
       ),
     );
@@ -237,7 +269,7 @@ class PostItemCardSmall extends StatelessWidget {
             postContainerHeight: _postContainerHeight,
             postContentContainerWidth: _postContentContainerWidth,
             deviceWidth: deviceWidth),
-        _buildPostImage(
+        _buildPostImageStack(
             postContainerHeight: _postContainerHeight,
             postImageContainerWidth: _postImageContainerWidth),
       ],
@@ -257,9 +289,7 @@ class PostItemCardSmall extends StatelessWidget {
       children: <Widget>[
         Material(
           child: InkWell(
-            onTap: () {
-              Navigator.of(context).pushNamed('/bookmark/${_bookmarkPost.postId}');
-            },
+            onTap: () => _navigateToPostDetailsPage(),
             child: Container(
               height: _containerHeight,
               width: _containerWidth,

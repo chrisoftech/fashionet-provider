@@ -1,9 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:fashionet_provider/blocs/blocs.dart';
 import 'package:fashionet_provider/models/models.dart';
-import 'package:fashionet_provider/widgets/widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -19,6 +18,14 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
   int _currentPostImageIndex = 0;
 
   Post get _post => widget.post;
+
+  void _navigateToPostDetailsPage() {
+    Navigator.of(context).pushNamed('/post/${_post.postId}');
+  }
+
+  void _navigateToProfilePage() {
+    Navigator.of(context).pushNamed('/post-profile/${_post.postId}');
+  }
 
   Widget _buildActivePostImage() {
     return Container(
@@ -163,7 +170,8 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
       builder: (BuildContext context, PostBloc postBloc, Widget child) {
         return InkWell(
           onTap: () {
-            postBloc.toggleFollowProfilePageStatus(currentPost: _post);
+            postBloc.toggleFollowProfilePageStatus(
+                currentPostProfile: _post.profile);
           },
           splashColor: Colors.black38,
           borderRadius: BorderRadius.circular(15.0),
@@ -213,7 +221,7 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
 
   Widget _buildUserListTile() {
     return ListTile(
-      onTap: () {},
+      onTap: () => _navigateToProfilePage(),
       leading: Container(
         height: 50.0,
         width: 50.0,
@@ -254,7 +262,6 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
 
   Widget _buildPostListTile() {
     return ListTile(
-      onTap: () {},
       title:
           Text('${_post.title}', style: TextStyle(fontWeight: FontWeight.bold)),
       subtitle: Text('${_post.description}', overflow: TextOverflow.ellipsis),
@@ -292,9 +299,7 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
         Card(
           elevation: 8.0,
           child: InkWell(
-            onTap: () {
-              Navigator.of(context).pushNamed('/post/${_post.postId}');
-            },
+            onTap: () => _navigateToPostDetailsPage(),
             child: Container(
               width: _contentWidth,
               child: Column(

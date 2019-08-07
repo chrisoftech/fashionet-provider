@@ -56,7 +56,7 @@ class _HomePageState extends State<HomePage> {
         if (index == 0) {
           Navigator.of(context).pushNamed('/search');
         } else if (index == 1) {
-          Navigator.of(context).pushNamed('/profile');
+          Navigator.of(context).pushNamed('/user-profile');
         }
       },
       child: Padding(

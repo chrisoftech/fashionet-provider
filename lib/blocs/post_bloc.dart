@@ -67,8 +67,10 @@ class PostBloc with ChangeNotifier {
     final String _postId = _document.documentID;
     final String _userId = _document.data['userId'];
 
-    final Profile _profile = await _profileBloc.fetchProfile(
-        userId: _userId); // fetch user for current post
+    await _profileBloc.fetchProfile(userId: _userId);
+
+    final Profile _profile =
+        _profileBloc.postProfile; // fetch user for current post
 
     final _post = Post(
       userId: _userId,
@@ -110,8 +112,10 @@ class PostBloc with ChangeNotifier {
     final String _postId = _document.documentID;
     final String _userId = _document.data['userId'];
 
-    final Profile _profile = await _profileBloc.fetchProfile(
+    await _profileBloc.fetchProfile(
         userId: _userId); // fetch user for current post
+
+    final Profile _profile = _profileBloc.postProfile;
 
     final _post = Post(
       userId: _userId,
@@ -134,9 +138,6 @@ class PostBloc with ChangeNotifier {
     // get post user following status for current user
     final bool _isFollowing = await _profileRepository.isFollowing(
         postUserId: _userId, userId: _currentUserId);
-
-    print('isBookmarked: ${document.documentID} $_isBookmarked');
-    print('isFollowing: ${document.documentID} $_isFollowing');
 
     return _post.copyWith(
         isBookmarked: _isBookmarked,
@@ -201,8 +202,8 @@ class PostBloc with ChangeNotifier {
   }
 
   Future<void> toggleFollowProfilePageStatus(
-      {@required Post currentPost}) async {
-    final Profile _profile = currentPost.profile;
+      {@required Profile currentPostProfile}) async {
+    final Profile _profile = currentPostProfile;
     final String _currentUserId = await _authBloc.getUser;
 
     final bool _followingStatus = _profile.isFollowing;
@@ -212,7 +213,7 @@ class PostBloc with ChangeNotifier {
         _profile.copyWith(isFollowing: _newFollowingStatus);
 
     final List<Post> _userPosts = _posts
-        .where((Post post) => post.userId == currentPost.userId)
+        .where((Post post) => post.userId == currentPostProfile.userId)
         .toList(); // get all posts with current post userId
 
     _userPosts.forEach((Post post) {
@@ -229,15 +230,15 @@ class PostBloc with ChangeNotifier {
     try {
       if (_newFollowingStatus) {
         await _profileRepository.addToFollowers(
-            postUserId: currentPost.userId, userId: _currentUserId);
+            postUserId: currentPostProfile.userId, userId: _currentUserId);
       } else {
         await _profileRepository.removeFromFollowers(
-            postUserId: currentPost.userId, userId: _currentUserId);
+            postUserId: currentPostProfile.userId, userId: _currentUserId);
       }
 
       // set user following in user collection
       await _profileBloc.toggleFollowProfilePageStatus(
-          post: currentPost, userId: _currentUserId);
+          profile: currentPostProfile);
 
       return;
     } catch (e) {
@@ -247,7 +248,7 @@ class PostBloc with ChangeNotifier {
           _profile.copyWith(isFollowing: !_newFollowingStatus);
 
       final List<Post> _userPosts = _posts
-          .where((Post post) => post.userId == currentPost.userId)
+          .where((Post post) => post.userId == currentPostProfile.userId)
           .toList(); // get all posts with current post userId
 
       _userPosts.forEach((Post post) {

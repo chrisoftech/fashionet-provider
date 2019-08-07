@@ -13,13 +13,18 @@ class ProfileBloc with ChangeNotifier {
   final AuthBloc _authBloc;
 
   Asset _profileImage;
-
+  Profile _postProfile;
+  Profile _userProfile;
   ProfileState _profileState = ProfileState.Default;
+  ProfileState _userProfileState = ProfileState.Default;
+  ProfileState _postProfileState = ProfileState.Default;
 
   ProfileBloc.instance()
       : _profileRepository = ProfileRepository(),
         _imageRepository = ImageRepository(),
-        _authBloc = AuthBloc.instance();
+        _authBloc = AuthBloc.instance() {
+    _fetchUserProfile();
+  }
 
   // getters
   Future<bool> get hasProfile async {
@@ -34,12 +39,25 @@ class ProfileBloc with ChangeNotifier {
   }
 
   Asset get profileImage => _profileImage;
-
+  Profile get postProfile => _postProfile;
+  Profile get userProfile => _userProfile;
   ProfileState get profileState => _profileState;
+  ProfileState get userProfileState => _userProfileState;
+  ProfileState get postProfileState => _postProfileState;
 
   // setters
   void setProfileImage({@required Asset profileImage}) {
     _profileImage = profileImage;
+    notifyListeners();
+  }
+
+  void setProfile({@required Profile postProfile}) {
+    _postProfile = postProfile;
+    notifyListeners();
+  }
+
+  void setUserProfile({@required Profile userProfile}) {
+    _userProfile = userProfile;
     notifyListeners();
   }
 
@@ -65,22 +83,22 @@ class ProfileBloc with ChangeNotifier {
   }
 
   Future<void> toggleFollowProfilePageStatus(
-      {@required Post post, @required String userId}) async {
-    final Profile _profile = post.profile;
+      {@required Profile profile}) async {
+    final String _userId = await _authBloc.getUser;
 
-    final String _postUserId = post.userId;
+    final String _postUserId = profile.userId;
 
-    final bool _followingStatus = _profile.isFollowing;
+    final bool _followingStatus = profile.isFollowing;
     final bool _newFollowingStatus = !_followingStatus;
 
     try {
       if (_newFollowingStatus) {
         await _profileRepository.addToFollowing(
-            postUserId: _postUserId, userId: userId);
+            postUserId: _postUserId, userId: _userId);
         print('Following user');
       } else {
         await _profileRepository.removeFromFollowing(
-            postUserId: _postUserId, userId: userId);
+            postUserId: _postUserId, userId: _userId);
         print('Not Following user');
       }
     } catch (e) {
@@ -88,28 +106,88 @@ class ProfileBloc with ChangeNotifier {
     }
   }
 
-  Future<Profile> fetchProfile({@required String userId}) async {
-    DocumentSnapshot _snapshot =
-        await _profileRepository.fetchProfile(userId: userId);
+  Future<void> _fetchUserProfile() async {
+    try {
+      _userProfileState = ProfileState.Loading;
+      notifyListeners();
 
-    if (!_snapshot.exists) {
-      print('UserId do not exit');
+      final String _userId = await _authBloc.getUser;
+      DocumentSnapshot _snapshot =
+          await _profileRepository.fetchProfile(userId: _userId);
+
+      if (!_snapshot.exists) {
+        print('UserId do not exit');
+        return;
+      }
+
+      final Profile _userProfile = Profile(
+        userId: _snapshot.documentID,
+        firstName: _snapshot.data['firstName'],
+        lastName: _snapshot.data['lastName'],
+        businessName: _snapshot.data['businessName'],
+        businessDescription: _snapshot.data['businessDescription'],
+        phoneNumber: _snapshot.data['phoneNumber'],
+        otherPhoneNumber: _snapshot.data['otherPhoneNumber'],
+        businessLocation: _snapshot.data['businessLocation'],
+        profileImageUrl: _snapshot.data['profileImageUrl'],
+        hasProfile: _snapshot.data['hasProfile'],
+        created: _snapshot.data['created'],
+        lastUpdate: _snapshot.data['lastUpdate'],
+      );
+
+      setUserProfile(userProfile: _userProfile);
+      _userProfileState = ProfileState.Success;
+      notifyListeners();
+      return;
+    } catch (e) {
+      print(e.toString());
+
+      _userProfileState = ProfileState.Failure;
+      notifyListeners();
+      return;
     }
+  }
 
-    return Profile(
-      userId: _snapshot.documentID,
-      firstName: _snapshot.data['firstName'],
-      lastName: _snapshot.data['lastName'],
-      businessName: _snapshot.data['businessName'],
-      businessDescription: _snapshot.data['businessDescription'],
-      phoneNumber: _snapshot.data['phoneNumber'],
-      otherPhoneNumber: _snapshot.data['otherPhoneNumber'],
-      businessLocation: _snapshot.data['businessLocation'],
-      profileImageUrl: _snapshot.data['profileImageUrl'],
-      hasProfile: _snapshot.data['hasProfile'],
-      created: _snapshot.data['created'],
-      lastUpdate: _snapshot.data['lastUpdate'],
-    );
+  Future<bool> fetchProfile({@required String userId}) async {
+    try {
+      _postProfileState = ProfileState.Loading;
+      notifyListeners();
+
+      DocumentSnapshot _snapshot =
+          await _profileRepository.fetchProfile(userId: userId);
+
+      if (!_snapshot.exists) {
+        print('UserId do not exit');
+        return true;
+      }
+
+      final Profile _postProfile = Profile(
+        userId: _snapshot.documentID,
+        firstName: _snapshot.data['firstName'],
+        lastName: _snapshot.data['lastName'],
+        businessName: _snapshot.data['businessName'],
+        businessDescription: _snapshot.data['businessDescription'],
+        phoneNumber: _snapshot.data['phoneNumber'],
+        otherPhoneNumber: _snapshot.data['otherPhoneNumber'],
+        businessLocation: _snapshot.data['businessLocation'],
+        profileImageUrl: _snapshot.data['profileImageUrl'],
+        hasProfile: _snapshot.data['hasProfile'],
+        created: _snapshot.data['created'],
+        lastUpdate: _snapshot.data['lastUpdate'],
+      );
+
+      setProfile(postProfile: _postProfile);
+
+      _postProfileState = ProfileState.Success;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      print(e.toString());
+
+      _postProfileState = ProfileState.Failure;
+      notifyListeners();
+      return false;
+    }
   }
 
   Future<bool> createProfile(

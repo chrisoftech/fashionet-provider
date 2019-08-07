@@ -128,8 +128,8 @@ class ProfileRepository {
       @required String businessLocation,
       @required String profileImageUrl}) {
     return _profileCollection.document(userId).setData({
-      'firstName': firstName,
-      'lastName': lastName,
+      'firstName': firstName.trim(),
+      'lastName': lastName.trim(),
       'businessName': businessName,
       'businessDescription': businessDescription,
       'phoneNumber': phoneNumber,
