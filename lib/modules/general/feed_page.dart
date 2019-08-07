@@ -14,6 +14,7 @@ class _FeedPageState extends State<FeedPage> {
   final _scrollThreshold = 200.0;
 
   PostBloc _postBloc;
+  bool _isRefreshing = false;
 
   @override
   void initState() {
@@ -42,8 +43,7 @@ class _FeedPageState extends State<FeedPage> {
         (BuildContext context, int index) {
           return index >= postBloc.posts.length
               ? BottomLoader()
-              : PostItemCardDefault(
-                  post: postBloc.posts[index]);
+              : PostItemCardDefault(post: postBloc.posts[index]);
         },
         childCount: postBloc.morePostsAvailable
             ? postBloc.posts.length + 1
@@ -59,32 +59,42 @@ class _FeedPageState extends State<FeedPage> {
           builder: (BuildContext context, PostBloc postBloc, Widget child) {
         _postBloc = postBloc;
 
-        return CustomScrollView(
-          controller: _scrollController,
-          slivers: <Widget>[
-            postBloc.postState == PostState.Loading
-                ? SliverToBoxAdapter(
-                    child: Column(
-                      children: <Widget>[
-                        SizedBox(height: 50.0),
-                        CircularProgressIndicator(),
-                      ],
-                    ),
-                  )
-                : postBloc.posts.length == 0
-                    ? SliverToBoxAdapter(
-                        child: Column(
-                          children: <Widget>[
-                            SizedBox(height: 50.0),
-                            Text('No Post(s) Loaded'),
-                          ],
-                        ),
-                      )
-                    : _buildSliverList(postBloc: postBloc),
-            SliverToBoxAdapter(
-              child: SizedBox(height: 160.0),
-            )
-          ],
+        return RefreshIndicator(
+          onRefresh: () async {
+            setState(() => _isRefreshing = true);
+            await postBloc.fetchPosts();
+            setState(() => _isRefreshing = false);
+          },
+          child: CustomScrollView(
+            controller: _scrollController,
+            slivers: <Widget>[
+              _isRefreshing
+                  ? _buildSliverList(postBloc: postBloc)
+                  : postBloc.postState == PostState.Loading
+                      ? SliverToBoxAdapter(
+                          child: Column(
+                            children: <Widget>[
+                              SizedBox(height: 50.0),
+                              CircularProgressIndicator(),
+                            ],
+                          ),
+                        )
+                      : postBloc.posts.length == 0
+                          ? SliverToBoxAdapter(
+                              child: Column(
+                                children: <Widget>[
+                                  SizedBox(height: 50.0),
+                                  Text('No Post(s) Loaded'),
+                                  Text('Drag-down to refresh page'),
+                                ],
+                              ),
+                            )
+                          : _buildSliverList(postBloc: postBloc),
+              SliverToBoxAdapter(
+                child: SizedBox(height: 160.0),
+              )
+            ],
+          ),
         );
       }),
     );
