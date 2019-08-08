@@ -333,26 +333,21 @@ class _ProfilePageState extends State<ProfilePage> {
     final double _deviceHeight = MediaQuery.of(context).size.height;
     final double _deviceWidth = MediaQuery.of(context).size.width;
 
-    // _postBloc.fetchProfilePosts(userId: _profile.userId);
-
-    // final double _postContainerWidth =
-    //     _deviceWidth > 450.0 ? 450.0 : _deviceWidth;
-
-    // final PostBloc _postBloc = Provider.of<PostBloc>(context);
-
-    // final double _postContainerPaddingValue =
-    //     (_deviceWidth > _postContainerWidth)
-    //         ? (_deviceWidth - _postContainerWidth)
-    //         : 0.0;
-
     return Scaffold(
       floatingActionButton: _buildProfileFAB(),
-      body: CustomScrollView(
-        controller: _scrollController,
-        slivers: <Widget>[
-          _buildSliverAppBar(context, _deviceHeight, _deviceWidth),
-          _buildDynamicSliverContent(),
-        ],
+      body: RefreshIndicator(
+        onRefresh: () async {
+          if (_currentDisplayedPageIndex == 0) {
+            await _postBloc.fetchProfilePosts(userId: _profile.userId);
+          }
+        },
+        child: CustomScrollView(
+          controller: _scrollController,
+          slivers: <Widget>[
+            _buildSliverAppBar(context, _deviceHeight, _deviceWidth),
+            _buildDynamicSliverContent(),
+          ],
+        ),
       ),
     );
   }
