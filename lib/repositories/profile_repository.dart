@@ -14,6 +14,13 @@ class ProfileRepository {
     return _profileCollection.document(userId).get();
   }
 
+  Future<QuerySnapshot> getProfileFollowing({@required String userId}) {
+    return _profileCollection
+        .document(userId)
+        .collection('following')
+        .getDocuments();
+  }
+
   Future<DocumentSnapshot> fetchProfile({@required String userId}) {
     return _profileCollection.document(userId).get();
   }
@@ -79,7 +86,7 @@ class ProfileRepository {
         .delete();
   }
 
-   Future<bool> isFollower(
+  Future<bool> isFollower(
       {@required String postUserId, @required String userId}) async {
     final DocumentSnapshot snapshot = await _profileCollection
         .document(postUserId)
@@ -115,7 +122,6 @@ class ProfileRepository {
         .orderBy('lastUpdate', descending: true)
         .getDocuments();
   }
-
 
   Future<void> createProfile(
       {@required String userId,

@@ -135,7 +135,13 @@ class ProfileBloc with ChangeNotifier {
         lastUpdate: _snapshot.data['lastUpdate'],
       );
 
-      setUserProfile(userProfile: _userProfile);
+      final QuerySnapshot snapshot =
+          await _profileRepository.getProfileFollowing(userId: _userId);
+      final int _userProfileFollowersCount = snapshot.documents.length;
+
+      setUserProfile(
+          userProfile: _userProfile.copyWith(
+              followersCount: _userProfileFollowersCount));
       // _userProfileState = ProfileState.Success;
       // notifyListeners();
       return;
@@ -176,7 +182,14 @@ class ProfileBloc with ChangeNotifier {
         lastUpdate: _snapshot.data['lastUpdate'],
       );
 
-      setProfile(postProfile: _postProfile);
+      // get follower count
+      final QuerySnapshot snapshot =
+          await _profileRepository.getProfileFollowing(userId: userId);
+      final int _profileFollowersCount = snapshot.documents.length;
+
+      setProfile(
+          postProfile:
+              _postProfile.copyWith(followersCount: _profileFollowersCount));
 
       _postProfileState = ProfileState.Success;
       notifyListeners();

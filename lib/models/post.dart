@@ -14,6 +14,7 @@ class Post {
   final dynamic lastUpdate;
   final Profile profile;
   final bool isBookmarked;
+  final int bookmarkCount;
 
   Post({
     @required this.userId,
@@ -28,6 +29,7 @@ class Post {
     @required this.lastUpdate,
     @required this.profile,
     this.isBookmarked = false,
+    this.bookmarkCount = 0,
   });
 
   Post copyWith({
@@ -43,6 +45,7 @@ class Post {
     dynamic lastUpdate,
     Profile profile,
     bool isBookmarked,
+    int bookmarkCount,
   }) {
     return Post(
       userId: userId ?? this.userId,
@@ -57,6 +60,7 @@ class Post {
       lastUpdate: lastUpdate ?? this.lastUpdate,
       profile: profile ?? this.profile,
       isBookmarked: isBookmarked ?? this.isBookmarked,
+      bookmarkCount: bookmarkCount ?? this.bookmarkCount,
     );
   }
 }

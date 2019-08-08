@@ -107,11 +107,14 @@ class PostBloc with ChangeNotifier {
     final bool _isFollowing = await _profileRepository.isFollowing(
         postUserId: _userId, userId: _currentUserId);
 
-    // print('isBookmarked: ${document.documentID} $_isBookmarked');
-    // print('isFollowing: ${document.documentID} $_isFollowing');
+    // get post bookmark count
+    QuerySnapshot _snapshot =
+        await _postRepository.getPostBookmarks(postId: _postId);
+    final int _postBookmarkCount = _snapshot.documents.length;
 
     return _post.copyWith(
         isBookmarked: _isBookmarked,
+        bookmarkCount: _postBookmarkCount,
         profile: _profile.copyWith(isFollowing: _isFollowing));
   }
 
@@ -119,8 +122,6 @@ class PostBloc with ChangeNotifier {
     final String _currentUserId = await _authBloc.getUser; // get current-user
 
     DocumentSnapshot _document = document;
-
-    print('Get post');
 
     final String _postId = _document.documentID;
     final String _userId = _document.data['userId'];
@@ -152,8 +153,14 @@ class PostBloc with ChangeNotifier {
     final bool _isFollowing = await _profileRepository.isFollowing(
         postUserId: _userId, userId: _currentUserId);
 
+    // get post bookmark count
+    QuerySnapshot _snapshot =
+        await _postRepository.getPostBookmarks(postId: _postId);
+    final int _postBookmarkCount = _snapshot.documents.length;
+
     return _post.copyWith(
         isBookmarked: _isBookmarked,
+        bookmarkCount: _postBookmarkCount,
         profile: _profile.copyWith(isFollowing: _isFollowing));
   }
 
@@ -166,8 +173,13 @@ class PostBloc with ChangeNotifier {
     final String _userId = await _authBloc.getUser;
     final String _postId = _recievedPost.postId;
 
+    final int _updatedBookmarkCount = _newBookmarkStatus
+        ? _recievedPost.bookmarkCount + 1
+        : _recievedPost.bookmarkCount - 1;
+
     final Post _updatedPost = _recievedPost.copyWith(
-        isBookmarked: _newBookmarkStatus); // update bookmark status
+        isBookmarked: _newBookmarkStatus,
+        bookmarkCount: _updatedBookmarkCount); // update bookmark status
 
     // get post index in _posts;
     final int _postIndex =
@@ -186,6 +198,8 @@ class PostBloc with ChangeNotifier {
 
     // update post in List<post> (optimistic update) in _bookmarkedPosts
     if (_newBookmarkStatus) {
+      // increment post bookmark count
+
       _bookmarkedPosts.insert(0, _updatedPost);
     } else {
       _bookmarkedPosts.removeWhere(
@@ -208,8 +222,13 @@ class PostBloc with ChangeNotifier {
     } catch (e) {
       print(e.toString());
 
-      final Post _updatedPost =
-          _recievedPost.copyWith(isBookmarked: !_newBookmarkStatus);
+      final int _updatedBookmarkCount = !_newBookmarkStatus
+          ? _recievedPost.bookmarkCount + 1
+          : _recievedPost.bookmarkCount - 1;
+
+      final Post _updatedPost = _recievedPost.copyWith(
+          isBookmarked: !_newBookmarkStatus,
+          bookmarkCount: _updatedBookmarkCount);
 
       _posts[_postIndex] = _updatedPost;
 
@@ -236,8 +255,13 @@ class PostBloc with ChangeNotifier {
     final bool _followingStatus = _profile.isFollowing;
     final bool _newFollowingStatus = !_followingStatus;
 
+    final int _updateFollowersCount = _newFollowingStatus
+          ? _profile.followersCount + 1
+          : _profile.followersCount - 1;
+
+
     final Profile _updatedProfile =
-        _profile.copyWith(isFollowing: _newFollowingStatus);
+        _profile.copyWith(isFollowing: _newFollowingStatus, followersCount: _updateFollowersCount);
 
     final List<Post> _userPosts = _posts
         .where((Post post) => post.userId == currentPostProfile.userId)

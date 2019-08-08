@@ -207,7 +207,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                 _isUserProfile ? Container() : SizedBox(width: 5.0),
                 Text(
-                  '10k followers',
+                  '${_profile.followersCount} follower(s)',
                   style: TextStyle(color: Theme.of(context).primaryColor),
                 )
               ],

@@ -288,7 +288,7 @@ class _PostDetailsState extends State<PostDetails> {
                   size: 20.0,
                 ),
                 SizedBox(width: 5.0),
-                Text('50k',
+                Text('${_post.bookmarkCount}',
                     style: TextStyle(
                         color: Colors.black38, fontWeight: FontWeight.bold)),
               ],

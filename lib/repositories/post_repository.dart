@@ -46,6 +46,13 @@ class PostRepository {
     return _postCollection.document(postId).get();
   }
 
+  Future<QuerySnapshot> getPostBookmarks({@required String postId}) {
+    return _postCollection
+        .document(postId)
+        .collection('bookmarks')
+        .getDocuments();
+  }
+
   Future<QuerySnapshot> fetchPosts({@required Post lastVisiblePost}) {
     return lastVisiblePost == null
         ? _postCollection

@@ -14,6 +14,7 @@ class Profile {
   final dynamic created;
   final dynamic lastUpdate;
   final bool isFollowing;
+  final int followersCount;
 
   Profile({
     @required this.userId,
@@ -29,6 +30,7 @@ class Profile {
     @required this.created,
     @required this.lastUpdate,
     this.isFollowing = false,
+    this.followersCount = 0,
   });
 
   Profile copyWith({
@@ -45,6 +47,7 @@ class Profile {
     dynamic created,
     dynamic lastUpdate,
     bool isFollowing,
+    int followersCount
   }) {
     return Profile(
       userId: userId ?? this.userId,
@@ -60,6 +63,7 @@ class Profile {
       created: created ?? this.created,
       lastUpdate: lastUpdate ?? this.lastUpdate,
       isFollowing: isFollowing ?? this.isFollowing,
+      followersCount: followersCount ?? this.followersCount,
     );
   }
 }
