@@ -76,7 +76,7 @@ class MyApp extends StatelessWidget {
             });
           }
 
-          // get the profile of selected post
+          // get the profile of selected post in feed
           if (pathElements[1] == 'post-profile') {
             final String _postId = pathElements[2];
 
@@ -87,7 +87,22 @@ class MyApp extends StatelessWidget {
                   final Post _post = postBloc.posts
                       .firstWhere((Post post) => post.postId == _postId);
 
-                  // postBloc.fetchProfilePosts(userId: _post.profile.userId);
+                  return ProfilePage(post: _post);
+                },
+              );
+            });
+          }
+
+          // get the profile of selected post in bookmarked posts
+          if (pathElements[1] == 'bookmarked-post-profile') {
+            final String _postId = pathElements[2];
+
+            return MaterialPageRoute(builder: (BuildContext context) {
+              return Consumer<PostBloc>(
+                builder:
+                    (BuildContext context, PostBloc postBloc, Widget child) {
+                  final Post _post = postBloc.bookmarkedPosts
+                      .firstWhere((Post post) => post.postId == _postId);
 
                   return ProfilePage(post: _post);
                 },
@@ -95,7 +110,7 @@ class MyApp extends StatelessWidget {
             });
           }
 
-          // get the profile of selected post
+          // get the profile of current user
           if (pathElements[1] == 'user-profile') {
             return MaterialPageRoute(builder: (BuildContext context) {
               return Consumer<ProfileBloc>(
