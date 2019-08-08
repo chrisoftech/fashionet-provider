@@ -42,7 +42,7 @@ class Post {
     dynamic created,
     dynamic lastUpdate,
     Profile profile,
-    bool isBookmarked = false,
+    bool isBookmarked,
   }) {
     return Post(
       userId: userId ?? this.userId,

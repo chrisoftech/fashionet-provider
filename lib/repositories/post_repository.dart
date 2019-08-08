@@ -42,7 +42,6 @@ class PostRepository {
         .delete();
   }
 
- 
   Future<DocumentSnapshot> getPost({@required String postId}) {
     return _postCollection.document(postId).get();
   }
@@ -54,6 +53,22 @@ class PostRepository {
             .limit(5)
             .getDocuments()
         : _postCollection
+            .orderBy('lastUpdate', descending: true)
+            .startAfter([lastVisiblePost.lastUpdate])
+            .limit(5)
+            .getDocuments();
+  }
+
+  Future<QuerySnapshot> fetchProfilePosts(
+      {@required Post lastVisiblePost, @required String userId}) {
+    return lastVisiblePost == null
+        ? _postCollection
+            .where('userId', isEqualTo: userId)
+            .orderBy('lastUpdate', descending: true)
+            .limit(5)
+            .getDocuments()
+        : _postCollection
+            .where('userId', isEqualTo: userId)
             .orderBy('lastUpdate', descending: true)
             .startAfter([lastVisiblePost.lastUpdate])
             .limit(5)

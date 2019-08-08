@@ -44,7 +44,7 @@ class Profile {
     bool hasProfile,
     dynamic created,
     dynamic lastUpdate,
-    isFollowing = false,
+    bool isFollowing,
   }) {
     return Profile(
       userId: userId ?? this.userId,

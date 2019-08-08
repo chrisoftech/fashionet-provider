@@ -17,6 +17,7 @@ export 'profile/profile_form.dart';
 export 'profile/profile_navbar.dart';
 export 'profile/profile_tabpage.dart';
 export 'profile/subscription_tabpage.dart';
+export 'profile/timeline-tabpage.dart';
 
 export 'shared/post_item_card_default.dart';
 export 'shared/post_item_card_large.dart';

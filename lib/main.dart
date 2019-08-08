@@ -87,6 +87,8 @@ class MyApp extends StatelessWidget {
                   final Post _post = postBloc.posts
                       .firstWhere((Post post) => post.postId == _postId);
 
+                  // postBloc.fetchProfilePosts(userId: _post.profile.userId);
+
                   return ProfilePage(post: _post);
                 },
               );
@@ -141,9 +143,7 @@ class _DynamicInitialPageState extends State<DynamicInitialPage> {
 
   @override
   Widget build(BuildContext context) {
-    // final AuthBloc _authBloc = Provider.of<AuthBloc>(context);
-    final ProfileBloc _profileBloc =
-        Provider.of<ProfileBloc>(context);
+    final ProfileBloc _profileBloc = Provider.of<ProfileBloc>(context);
 
     return Consumer<AuthBloc>(
       builder: (BuildContext context, AuthBloc authBloc, Widget child) {

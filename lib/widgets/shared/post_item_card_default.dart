@@ -8,8 +8,11 @@ import 'package:provider/provider.dart';
 
 class PostItemCardDefault extends StatefulWidget {
   final Post post;
+  final bool isProfilePost;
 
-  const PostItemCardDefault({Key key, @required this.post}) : super(key: key);
+  const PostItemCardDefault(
+      {Key key, @required this.post, this.isProfilePost = false})
+      : super(key: key);
   @override
   _PostItemCardDefaultState createState() => _PostItemCardDefaultState();
 }
@@ -18,6 +21,7 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
   int _currentPostImageIndex = 0;
 
   Post get _post => widget.post;
+  bool get _isProfilePost => widget.isProfilePost;
 
   void _navigateToPostDetailsPage() {
     Navigator.of(context).pushNamed('/post/${_post.postId}');
@@ -221,7 +225,7 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
 
   Widget _buildUserListTile() {
     return ListTile(
-      onTap: () => _navigateToProfilePage(),
+      onTap: _isProfilePost ? null : () => _navigateToProfilePage(),
       leading: Container(
         height: 50.0,
         width: 50.0,
@@ -256,7 +260,7 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
           style: TextStyle(fontWeight: FontWeight.bold)),
       subtitle:
           Text('${DateFormat.yMMMMEEEEd().format(_post.lastUpdate.toDate())}'),
-      trailing: _buildFollowTrailingButton(),
+      trailing: _isProfilePost ? null : _buildFollowTrailingButton(),
     );
   }
 

@@ -16,11 +16,17 @@ class PostBloc with ChangeNotifier {
 
   PostState _postState = PostState.Default;
   PostState _bookmarkPostState = PostState.Default;
+  PostState _profilePostState = PostState.Default;
 
   List<Post> _posts = [];
   List<Post> _bookmarkedPosts = [];
+  List<Post> _profilePosts = [];
+
   bool _morePostsAvailable = true;
   bool _fetchingMorePosts = false;
+
+  bool _moreProfilePostsAvailable = true;
+  bool _fetchingMoreProfilePosts = false;
 
   PostBloc.instance()
       : _postRepository = PostRepository(),
@@ -35,11 +41,18 @@ class PostBloc with ChangeNotifier {
   // getters
   PostState get postState => _postState;
   PostState get bookmarkPostState => _bookmarkPostState;
+  PostState get profilePostState => _profilePostState;
+
   List<Post> get posts => _posts;
+  List<Post> get profilePosts => _profilePosts;
   List<Post> get bookmarkedPosts =>
       _bookmarkedPosts.where((Post post) => post.isBookmarked == true).toList();
+
   bool get morePostsAvailable => _morePostsAvailable;
   bool get fetchingMorePosts => _fetchingMorePosts;
+
+  bool get moreProfilePostsAvailable => _moreProfilePostsAvailable;
+  bool get fetchingMoreProfilePosts => _fetchingMoreProfilePosts;
 
   // methods
   Future<List<String>> _uploadPostImage(
@@ -156,11 +169,20 @@ class PostBloc with ChangeNotifier {
     final Post _updatedPost = _recievedPost.copyWith(
         isBookmarked: _newBookmarkStatus); // update bookmark status
 
+    // get post index in _posts;
     final int _postIndex =
         _posts.indexWhere((Post post) => post.postId == _postId);
 
     _posts[_postIndex] =
         _updatedPost; // update post in List<post> (optimistic update) in _posts
+
+    final int _profilePostIndex = _profilePosts.indexWhere((Post post) =>
+        post.postId == _postId); // get post index in _profilePosts;
+
+    if (_profilePostIndex != -1) {
+      _profilePosts[_profilePostIndex] =
+          _updatedPost; // update post in List<post> (optimistic update) in _profilePost
+    }
 
     // update post in List<post> (optimistic update) in _bookmarkedPosts
     if (_newBookmarkStatus) {
@@ -191,6 +213,11 @@ class PostBloc with ChangeNotifier {
 
       _posts[_postIndex] = _updatedPost;
 
+      if (_profilePostIndex != -1) {
+        _profilePosts[_profilePostIndex] =
+            _updatedPost; // update post in List<post> (optimistic update) in _profilePost
+      }
+
       if (_newBookmarkStatus) {
         _bookmarkedPosts.removeWhere(
             (Post bookmarkedPost) => bookmarkedPost.postId == _postId);
@@ -216,29 +243,29 @@ class PostBloc with ChangeNotifier {
         .where((Post post) => post.userId == currentPostProfile.userId)
         .toList(); // get all posts with current post userId
 
-    _userPosts.forEach((Post post) {
-      final String _postId = post.postId;
-      final Post _updatedPost = post.copyWith(profile: _updatedProfile);
+    for (int i = 0; i < _userPosts.length; i++) {
+      final String _postId = _userPosts[i].postId;
+      final Post _updatedPost =
+          _userPosts[i].copyWith(profile: _updatedProfile);
 
       final int _postIndex =
           _posts.indexWhere((Post post) => post.postId == _postId);
 
       _posts[_postIndex] = _updatedPost;
       notifyListeners();
-    });
+    }
 
     try {
       if (_newFollowingStatus) {
         await _profileRepository.addToFollowers(
-            postUserId: currentPostProfile.userId, userId: _currentUserId);
+            postUserId: _profile.userId, userId: _currentUserId);
       } else {
         await _profileRepository.removeFromFollowers(
-            postUserId: currentPostProfile.userId, userId: _currentUserId);
+            postUserId: _profile.userId, userId: _currentUserId);
       }
 
       // set user following in user collection
-      await _profileBloc.toggleFollowProfilePageStatus(
-          profile: currentPostProfile);
+      await _profileBloc.toggleFollowProfilePageStatus(profile: _profile);
 
       return;
     } catch (e) {
@@ -248,7 +275,7 @@ class PostBloc with ChangeNotifier {
           _profile.copyWith(isFollowing: !_newFollowingStatus);
 
       final List<Post> _userPosts = _posts
-          .where((Post post) => post.userId == currentPostProfile.userId)
+          .where((Post post) => post.userId == _profile.userId)
           .toList(); // get all posts with current post userId
 
       _userPosts.forEach((Post post) {
@@ -307,11 +334,8 @@ class PostBloc with ChangeNotifier {
       List<Post> posts = [];
 
       for (int i = 0; i < _snapshot.documents.length; i++) {
-        print('post snapshot legth: ${_snapshot.documents.length}');
         final DocumentSnapshot document = _snapshot.documents[i];
         final Post _post = await _getPost(document: document);
-
-        print('post $i: ${_post != null ? 'Exists' : 'Not Exist'}');
 
         posts.add(_post);
       }
@@ -373,6 +397,87 @@ class PostBloc with ChangeNotifier {
       print(e.toString());
 
       _fetchingMorePosts = false;
+      return;
+    }
+  }
+
+  Future<void> fetchProfilePosts({@required String userId}) async {
+    try {
+      _profilePostState = PostState.Loading;
+      notifyListeners();
+
+      QuerySnapshot _snapshot = await _postRepository.fetchProfilePosts(
+          lastVisiblePost: null, userId: userId);
+
+      List<Post> profilePosts = [];
+
+      for (int i = 0; i < _snapshot.documents.length; i++) {
+        final DocumentSnapshot document = _snapshot.documents[i];
+        final Post _post = await _getPost(document: document);
+
+        profilePosts.add(_post);
+      }
+      _profilePosts = profilePosts;
+
+      _profilePostState = PostState.Success;
+      notifyListeners();
+
+      return;
+    } catch (e) {
+      print(e.toString());
+
+      _profilePostState = PostState.Failure;
+      notifyListeners();
+      return;
+    }
+  }
+
+  Future<void> fetchMoreProfilePosts({@required String userId}) async {
+    try {
+      final List<Post> currentProfilePosts = _profilePosts;
+      final Post lastVisiblePost =
+          currentProfilePosts[currentProfilePosts.length - 1];
+
+      if (_fetchingMoreProfilePosts == true) {
+        print('Fetching more profile posts!');
+        return;
+      }
+
+      _moreProfilePostsAvailable = true;
+      _fetchingMoreProfilePosts = true;
+      notifyListeners();
+
+      final QuerySnapshot _snapshot = await _postRepository.fetchProfilePosts(
+          lastVisiblePost: lastVisiblePost, userId: userId);
+
+      if (_snapshot.documents.length < 1) {
+        _moreProfilePostsAvailable = false;
+        _fetchingMoreProfilePosts = false;
+        notifyListeners();
+        print('No more profile post available!');
+        return;
+      }
+
+      List<Post> profilePosts = [];
+
+      for (int i = 0; i < _snapshot.documents.length; i++) {
+        final DocumentSnapshot document = _snapshot.documents[i];
+        final Post _post = await _getPost(document: document);
+
+        profilePosts.add(_post);
+      }
+
+      profilePosts.isEmpty
+          ? _profilePosts = currentProfilePosts
+          : _profilePosts += profilePosts;
+      _fetchingMoreProfilePosts = false;
+      notifyListeners();
+
+      return;
+    } catch (e) {
+      print(e.toString());
+
+      _fetchingMoreProfilePosts = false;
       return;
     }
   }

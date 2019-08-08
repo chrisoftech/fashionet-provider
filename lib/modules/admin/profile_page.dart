@@ -10,9 +10,12 @@ class ProfilePage extends StatefulWidget {
   final Profile userProfile;
   final bool isUserProfile;
 
-  const ProfilePage(
-      {Key key, this.post, this.userProfile, this.isUserProfile = false})
-      : super(key: key);
+  const ProfilePage({
+    Key key,
+    this.post,
+    this.userProfile,
+    this.isUserProfile = false,
+  }) : super(key: key);
 
   @override
   _ProfilePageState createState() => _ProfilePageState();
@@ -20,12 +23,51 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   int _currentDisplayedPageIndex = 0;
+  final _scrollController = ScrollController();
+  final _scrollThreshold = 200.0;
 
   Post get _post => widget.post;
   Profile get _userProfile => widget.userProfile;
   bool get _isUserProfile => widget.isUserProfile;
 
   Profile get _profile => _isUserProfile ? _userProfile : _post.profile;
+
+  PostBloc _postBloc;
+  bool _isRefreshing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+
+    _postBloc = Provider.of<PostBloc>(context, listen: false);
+    _onWidgetDidBuild(() {
+      _postBloc.fetchProfilePosts(userId: _profile.userId);
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.position.pixels;
+    if (maxScroll - currentScroll <= _scrollThreshold) {
+      print('sroll next');
+      if (_currentDisplayedPageIndex == 0) {
+        _postBloc.fetchMoreProfilePosts(userId: _profile.userId);
+      }
+    }
+  }
+
+  void _onWidgetDidBuild(Function callback) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      callback();
+    });
+  }
 
   SliverAppBar _buildSliverAppBar(
       BuildContext context, double _deviceHeight, double _deviceWidth) {
@@ -67,9 +109,11 @@ class _ProfilePageState extends State<ProfilePage> {
                 Center(child: Icon(Icons.error)),
             imageBuilder: (BuildContext context, ImageProvider image) {
               return Hero(
-                tag: _isUserProfile
-                    ? '${_profile.profileImageUrl}'
-                    : '${_post.postId}_${_profile.profileImageUrl}',
+                tag:
+                    // _isUserProfile
+                    // ?
+                    '${_profile.profileImageUrl}',
+                // : '${_post.postId}_${_profile.profileImageUrl}',
                 child: Container(
                   height: 120.0,
                   width: 120.0,
@@ -246,17 +290,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  SliverList _buildPostTimelineTabPage() {
-    return SliverList(
-      delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
-        // return PostItemCardDefault(
-        //   postImages: _postImages,
-        // );
-        return Container(child: Text('Item $index'));
-      }, childCount: 10),
-    );
-  }
-
   SliverToBoxAdapter _buildGalleryTabPage() {
     return SliverToBoxAdapter(
       child: Container(
@@ -272,7 +305,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
     switch (_currentDisplayedPageIndex) {
       case 0:
-        _dynamicSliverContent = _buildPostTimelineTabPage();
+        _dynamicSliverContent = TimelineTabPage(userId: _profile.userId);
         break;
 
       case 1:
@@ -288,7 +321,7 @@ class _ProfilePageState extends State<ProfilePage> {
         break;
 
       default:
-        _dynamicSliverContent = _buildPostTimelineTabPage();
+        _dynamicSliverContent = TimelineTabPage(userId: _profile.userId);
         break;
     }
 
@@ -300,10 +333,12 @@ class _ProfilePageState extends State<ProfilePage> {
     final double _deviceHeight = MediaQuery.of(context).size.height;
     final double _deviceWidth = MediaQuery.of(context).size.width;
 
-    final double _postContainerWidth =
-        _deviceWidth > 450.0 ? 450.0 : _deviceWidth;
+    // _postBloc.fetchProfilePosts(userId: _profile.userId);
 
-    final PostBloc _postBloc = Provider.of<PostBloc>(context);
+    // final double _postContainerWidth =
+    //     _deviceWidth > 450.0 ? 450.0 : _deviceWidth;
+
+    // final PostBloc _postBloc = Provider.of<PostBloc>(context);
 
     // final double _postContainerPaddingValue =
     //     (_deviceWidth > _postContainerWidth)
@@ -313,6 +348,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       floatingActionButton: _buildProfileFAB(),
       body: CustomScrollView(
+        controller: _scrollController,
         slivers: <Widget>[
           _buildSliverAppBar(context, _deviceHeight, _deviceWidth),
           _buildDynamicSliverContent(),
