@@ -4,6 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class SubscriptionTabPage extends StatelessWidget {
+  final bool isRefreshing;
+
+  const SubscriptionTabPage({Key key, @required this.isRefreshing}) : super(key: key);
+
+  bool get _isRefreshing => isRefreshing;
+
   Widget _buildSliverList({@required ProfileBloc profileBloc}) {
     return SliverList(
       delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
@@ -17,12 +23,14 @@ class SubscriptionTabPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<ProfileBloc>(
         builder: (BuildContext context, ProfileBloc profileBloc, Widget child) {
-      return profileBloc.profileFollowingState == ProfileState.Loading
+      return 
+      _isRefreshing ? _buildSliverList(profileBloc: profileBloc) : 
+      profileBloc.profileFollowingState == ProfileState.Loading
           ? SliverToBoxAdapter(
               child: Column(
                 children: <Widget>[
                   SizedBox(height: 50.0),
-                  CircularProgressIndicator(),
+                  _isRefreshing ? Container() : CircularProgressIndicator(),
                 ],
               ),
             )

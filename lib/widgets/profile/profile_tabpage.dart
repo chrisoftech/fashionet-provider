@@ -62,11 +62,14 @@ class ProfileTabPage extends StatelessWidget {
               // SizedBox(height: 5.0),
               Text(
                 '${_profile.businessName}',
-                style: TextStyle(
-                    fontSize: 30.0,
-                    fontWeight: FontWeight.w900),
+                style: TextStyle(fontSize: 30.0, fontWeight: FontWeight.w900),
               ),
               _buildPostPriceTag(context: context),
+              SizedBox(height: 20.0),
+              Text(
+                'Contacts',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
+              ),
               SizedBox(height: 10.0),
               Row(
                 children: <Widget>[
@@ -90,6 +93,7 @@ class ProfileTabPage extends StatelessWidget {
               Row(
                 children: <Widget>[
                   Icon(Icons.location_on, size: 15.0),
+                  SizedBox(width: 5.0),
                   Expanded(child: Text('${_profile.businessLocation}')),
                 ],
               ),

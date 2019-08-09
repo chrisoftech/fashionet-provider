@@ -6,16 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class ProfilePage extends StatefulWidget {
-  final Post post;
   final Profile userProfile;
-  final bool isUserProfile;
 
-  const ProfilePage({
-    Key key,
-    this.post,
-    this.userProfile,
-    this.isUserProfile = false,
-  }) : super(key: key);
+  const ProfilePage({Key key, this.userProfile}) : super(key: key);
 
   @override
   _ProfilePageState createState() => _ProfilePageState();
@@ -26,15 +19,12 @@ class _ProfilePageState extends State<ProfilePage> {
   final _scrollController = ScrollController();
   final _scrollThreshold = 200.0;
 
-  Post get _post => widget.post;
-  Profile get _userProfile => widget.userProfile;
-  bool get _isUserProfile => widget.isUserProfile;
-
-  Profile get _profile => _isUserProfile ? _userProfile : _post.profile;
+  Profile get _profile => widget.userProfile;
+  bool _isCurrentUserProfile = false;
 
   PostBloc _postBloc;
   ProfileBloc _profileBloc;
-  // bool _isRefreshing = false;
+  bool _isRefreshing = false;
 
   @override
   void initState() {
@@ -43,6 +33,15 @@ class _ProfilePageState extends State<ProfilePage> {
 
     _postBloc = Provider.of<PostBloc>(context, listen: false);
     _profileBloc = Provider.of<ProfileBloc>(context, listen: false);
+
+    if (_profileBloc.userProfile != null) {
+      setState(() {
+        _profileBloc.userProfile.userId == _profile.userId
+            ? _isCurrentUserProfile = true
+            : _isCurrentUserProfile = false;
+      });
+    }
+
     _onWidgetDidBuild(() {
       _postBloc.fetchProfilePosts(userId: _profile.userId);
     });
@@ -59,7 +58,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final currentScroll = _scrollController.position.pixels;
     if (maxScroll - currentScroll <= _scrollThreshold) {
       print('sroll next');
-      _postBloc.fetchProfilePosts(userId: _profile.userId);
+      _postBloc.fetchMoreProfilePosts(userId: _profile.userId);
     }
   }
 
@@ -67,14 +66,6 @@ class _ProfilePageState extends State<ProfilePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       callback();
     });
-  }
-
-  void _fetchPageContent() async {
-    if (_currentDisplayedPageIndex == 0) {
-      await _postBloc.fetchProfilePosts(userId: _profile.userId);
-    } else if (_currentDisplayedPageIndex == 1) {
-      await _profileBloc.fetchUserProfileFollowing();
-    }
   }
 
   SliverAppBar _buildSliverAppBar(
@@ -97,6 +88,7 @@ class _ProfilePageState extends State<ProfilePage> {
       bottom: PreferredSize(
           preferredSize: Size.fromHeight(5.0),
           child: ProfileNavbar(
+            isCurrentUserProfile: _isCurrentUserProfile,
             onActiveIndexChange: (int index) {
               setState(() {
                 _currentDisplayedPageIndex = index;
@@ -107,7 +99,7 @@ class _ProfilePageState extends State<ProfilePage> {
               } else if (_currentDisplayedPageIndex == 1) {
                 _profileBloc.fetchUserProfileFollowing();
               }
-              
+
               print(_currentDisplayedPageIndex);
             },
           )),
@@ -161,7 +153,7 @@ class _ProfilePageState extends State<ProfilePage> {
         builder: (BuildContext context, PostBloc postBloc, Widget child) {
       final double _containerHeight = _profile.isFollowing ? 30.0 : 30.0;
       final double _containerWidth =
-          _isUserProfile ? 100.0 : _profile.isFollowing ? 110.0 : 140.0;
+          _isCurrentUserProfile ? 100.0 : _profile.isFollowing ? 110.0 : 140.0;
 
       return Material(
         elevation: 10.0,
@@ -171,7 +163,7 @@ class _ProfilePageState extends State<ProfilePage> {
         child: InkWell(
           splashColor: Colors.black38,
           borderRadius: BorderRadius.circular(20.0),
-          onTap: _isUserProfile
+          onTap: _isCurrentUserProfile
               ? null
               : () {
                   postBloc.toggleFollowProfilePageStatus(
@@ -187,7 +179,7 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                _isUserProfile
+                _isCurrentUserProfile
                     ? Container()
                     : _profile.isFollowing
                         ? Flexible(
@@ -210,8 +202,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                   fontWeight: FontWeight.bold),
                             ),
                           ),
-                _isUserProfile ? Container() : SizedBox(width: 5.0),
-                _isUserProfile
+                _isCurrentUserProfile ? Container() : SizedBox(width: 5.0),
+                _isCurrentUserProfile
                     ? Container()
                     : Container(
                         height: 15.0,
@@ -220,7 +212,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             color: Colors.black38,
                             borderRadius: BorderRadius.circular(5.0)),
                       ),
-                _isUserProfile ? Container() : SizedBox(width: 10.0),
+                _isCurrentUserProfile ? Container() : SizedBox(width: 10.0),
                 Text(
                   '${_profile.followersCount} ${_profile.followersCount > 1 ? 'followers' : 'follower'}',
                   style: TextStyle(color: Theme.of(context).primaryColor),
@@ -281,7 +273,7 @@ class _ProfilePageState extends State<ProfilePage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           _buildProfileAvatar(),
-           SizedBox(height: 5.0),
+          SizedBox(height: 5.0),
           _buildProfileName(),
           SizedBox(height: 5.0),
           _buildProfileFollowButton(),
@@ -311,11 +303,14 @@ class _ProfilePageState extends State<ProfilePage> {
 
     switch (_currentDisplayedPageIndex) {
       case 0:
-        _dynamicSliverContent = TimelineTabPage(userId: _profile.userId);
+        _dynamicSliverContent = TimelineTabPage(
+            userId: _profile.userId, isRefreshing: _isRefreshing);
         break;
 
       case 1:
-        _dynamicSliverContent = SubscriptionTabPage();
+        _dynamicSliverContent = _isCurrentUserProfile
+            ? SubscriptionTabPage(isRefreshing: _isRefreshing)
+            : ProfileTabPage(profile: _profile);
         break;
 
       case 2:
@@ -323,7 +318,8 @@ class _ProfilePageState extends State<ProfilePage> {
         break;
 
       default:
-        _dynamicSliverContent = TimelineTabPage(userId: _profile.userId);
+        _dynamicSliverContent = TimelineTabPage(
+            userId: _profile.userId, isRefreshing: _isRefreshing);
         break;
     }
 
@@ -339,11 +335,13 @@ class _ProfilePageState extends State<ProfilePage> {
       floatingActionButton: _buildProfileFAB(),
       body: RefreshIndicator(
         onRefresh: () async {
+          setState(() => _isRefreshing = true);
           if (_currentDisplayedPageIndex == 0) {
             await _postBloc.fetchProfilePosts(userId: _profile.userId);
           } else if (_currentDisplayedPageIndex == 1) {
             await _profileBloc.fetchUserProfileFollowing();
           }
+          setState(() => _isRefreshing = false);
         },
         child: CustomScrollView(
           controller: _scrollController,

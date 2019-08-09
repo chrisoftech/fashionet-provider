@@ -105,7 +105,8 @@ class MyApp extends StatelessWidget {
                   final Post _post = postBloc.posts
                       .firstWhere((Post post) => post.postId == _postId);
 
-                  return ProfilePage(post: _post);
+                  return ProfilePage(userProfile: _post.profile);
+                  // return ProfilePage(post: _post);
                 },
               );
             });
@@ -122,7 +123,25 @@ class MyApp extends StatelessWidget {
                   final Post _post = postBloc.bookmarkedPosts
                       .firstWhere((Post post) => post.postId == _postId);
 
-                  return ProfilePage(post: _post);
+                  return ProfilePage(userProfile: _post.profile);
+                },
+              );
+            });
+          }
+
+          // get the profile of selected post in bookmarked posts
+          if (pathElements[1] == 'subscribed-post-profile') {
+            final String _profileId = pathElements[2];
+
+            return MaterialPageRoute(builder: (BuildContext context) {
+              return  Consumer<ProfileBloc>(
+                builder: (BuildContext context, ProfileBloc profileBloc,
+                    Widget child) {
+                   final Profile _userProfile = profileBloc.profileFollowing
+                      .firstWhere((Profile profile) => profile.userId == _profileId);
+
+                  return ProfilePage(
+                      userProfile: _userProfile);
                 },
               );
             });
@@ -137,7 +156,7 @@ class MyApp extends StatelessWidget {
                   final Profile _userProfile = profileBloc.userProfile;
 
                   return ProfilePage(
-                      userProfile: _userProfile, isUserProfile: true);
+                      userProfile: _userProfile);
                 },
               );
             });

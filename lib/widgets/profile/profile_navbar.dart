@@ -3,9 +3,13 @@ import 'package:flutter/material.dart';
 class ProfileNavbar extends StatefulWidget {
   final int activeIndex;
   final Function(int) onActiveIndexChange;
+  final bool isCurrentUserProfile;
 
   const ProfileNavbar(
-      {Key key, this.activeIndex = 0, @required this.onActiveIndexChange})
+      {Key key,
+      this.activeIndex = 0,
+      @required this.onActiveIndexChange,
+      this.isCurrentUserProfile = false})
       : super(key: key);
 
   @override
@@ -15,6 +19,7 @@ class ProfileNavbar extends StatefulWidget {
 class _ProfileNavbarState extends State<ProfileNavbar> {
   int _activeIndex;
   Function(int) get _onActiveIndexChanged => widget.onActiveIndexChange;
+  bool get _isCurrentUserProfile => widget.isCurrentUserProfile;
 
   @override
   void initState() {
@@ -47,12 +52,14 @@ class _ProfileNavbarState extends State<ProfileNavbar> {
                       index: 0,
                       icon: Icons.timeline,
                     ),
+                    !_isCurrentUserProfile
+                        ? Container()
+                        : _buildBottomNavBarItem(
+                            index: 1,
+                            icon: Icons.subscriptions,
+                          ),
                     _buildBottomNavBarItem(
-                      index: 1,
-                      icon: Icons.subscriptions,
-                    ),
-                    _buildBottomNavBarItem(
-                      index: 2,
+                      index: !_isCurrentUserProfile ? 1 : 2,
                       icon: Icons.person,
                     ),
                   ],

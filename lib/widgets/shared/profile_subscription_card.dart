@@ -18,6 +18,10 @@ class ProfileSubscriptionCard extends StatefulWidget {
 class _ProfileSubscriptionCardState extends State<ProfileSubscriptionCard> {
   Profile get _profile => widget.profile;
 
+   void _navigateToProfilePage() {
+    Navigator.of(context).pushNamed('/subscribed-post-profile/${_profile.userId}');
+  }
+
   Widget _buildUnfollowButton() {
     return Consumer<PostBloc>(
         builder: (BuildContext context, PostBloc postBloc, Widget child) {
@@ -131,8 +135,12 @@ class _ProfileSubscriptionCardState extends State<ProfileSubscriptionCard> {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      child: Card(
+    return Card(
+      elevation: 3.0,
+      child: InkWell(
+        onTap: () {
+          _navigateToProfilePage();
+        },
         child: Column(
           children: <Widget>[
             _buildTitleListTile(context: context),

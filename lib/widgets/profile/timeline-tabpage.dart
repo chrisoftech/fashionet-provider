@@ -6,10 +6,14 @@ import 'package:provider/provider.dart';
 
 class TimelineTabPage extends StatelessWidget {
   final String userId;
+  final bool isRefreshing;
 
-  const TimelineTabPage({Key key, @required this.userId}) : super(key: key);
+  const TimelineTabPage(
+      {Key key, @required this.userId, @required this.isRefreshing})
+      : super(key: key);
 
   String get _userId => userId;
+  bool get _isRefreshing => isRefreshing;
 
   Widget _buildSliverList({@required PostBloc postBloc}) {
     return SliverList(
@@ -31,38 +35,40 @@ class TimelineTabPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<PostBloc>(
         builder: (BuildContext context, PostBloc postBloc, Widget child) {
-      return postBloc.profilePostState == PostState.Loading
-          ? SliverToBoxAdapter(
-              child: Column(
-                children: <Widget>[
-                  SizedBox(height: 50.0),
-                  CircularProgressIndicator(),
-                ],
-              ),
-            )
-          : postBloc.profilePosts.length == 0
+      return _isRefreshing
+          ? _buildSliverList(postBloc: postBloc)
+          : postBloc.profilePostState == PostState.Loading
               ? SliverToBoxAdapter(
                   child: Column(
                     children: <Widget>[
                       SizedBox(height: 50.0),
-                      FlatButton(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Icon(Icons.refresh),
-                            Text('refresh'),
-                          ],
-                        ),
-                        onPressed: () {
-                          postBloc.fetchProfilePosts(userId: _userId);
-                        },
-                      ),
-                      Text('No Post(s) Loaded'),
+                      _isRefreshing ? Container() : CircularProgressIndicator(),
                     ],
                   ),
                 )
-              : _buildSliverList(postBloc: postBloc);
+              : postBloc.profilePosts.length == 0
+                  ? SliverToBoxAdapter(
+                      child: Column(
+                        children: <Widget>[
+                          SizedBox(height: 50.0),
+                          FlatButton(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Icon(Icons.refresh),
+                                Text('refresh'),
+                              ],
+                            ),
+                            onPressed: () {
+                              postBloc.fetchProfilePosts(userId: _userId);
+                            },
+                          ),
+                          Text('No Post(s) Loaded'),
+                        ],
+                      ),
+                    )
+                  : _buildSliverList(postBloc: postBloc);
     });
   }
 }

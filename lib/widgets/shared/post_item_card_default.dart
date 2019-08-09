@@ -19,9 +19,25 @@ class PostItemCardDefault extends StatefulWidget {
 
 class _PostItemCardDefaultState extends State<PostItemCardDefault> {
   int _currentPostImageIndex = 0;
+  bool _isCurrentUserProfile = false;
 
   Post get _post => widget.post;
   bool get _isProfilePost => widget.isProfilePost;
+
+  initState() {
+    super.initState();
+
+    final ProfileBloc _profileBloc =
+        Provider.of<ProfileBloc>(context, listen: false);
+
+    if (_profileBloc.userProfile != null) {
+      setState(() {
+        _profileBloc.userProfile.userId == _post.profile.userId
+            ? _isCurrentUserProfile = true
+            : _isCurrentUserProfile = false;
+      });
+    }
+  }
 
   void _navigateToPostDetailsPage() {
     if (_isProfilePost) {
@@ -264,7 +280,9 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
           style: TextStyle(fontWeight: FontWeight.bold)),
       subtitle:
           Text('${DateFormat.yMMMMEEEEd().format(_post.lastUpdate.toDate())}'),
-      trailing: _isProfilePost ? null : _buildFollowTrailingButton(),
+      trailing: _isCurrentUserProfile
+          ? null
+          : _isProfilePost ? null : _buildFollowTrailingButton(),
     );
   }
 
