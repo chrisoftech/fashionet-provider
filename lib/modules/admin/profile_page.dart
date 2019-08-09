@@ -306,16 +306,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  SliverToBoxAdapter _buildGalleryTabPage() {
-    return SliverToBoxAdapter(
-      child: Container(
-        child: Center(
-          child: Text('Gallery comming soon!'),
-        ),
-      ),
-    );
-  }
-
   Widget _buildDynamicSliverContent() {
     Widget _dynamicSliverContent;
 
@@ -329,11 +319,7 @@ class _ProfilePageState extends State<ProfilePage> {
         break;
 
       case 2:
-        _dynamicSliverContent = _buildGalleryTabPage();
-        break;
-
-      case 3:
-        _dynamicSliverContent = ProfileTabPage();
+        _dynamicSliverContent = ProfileTabPage(profile: _profile);
         break;
 
       default:

@@ -40,7 +40,7 @@ class _ProfileNavbarState extends State<ProfileNavbar> {
               child: Container(
                 width: _deviceWidth,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     _buildBottomNavBarItem(
@@ -53,10 +53,6 @@ class _ProfileNavbarState extends State<ProfileNavbar> {
                     ),
                     _buildBottomNavBarItem(
                       index: 2,
-                      icon: Icons.photo,
-                    ),
-                    _buildBottomNavBarItem(
-                      index: 3,
                       icon: Icons.person,
                     ),
                   ],

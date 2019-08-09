@@ -1,6 +1,40 @@
+import 'package:fashionet_provider/models/models.dart';
 import 'package:flutter/material.dart';
 
 class ProfileTabPage extends StatelessWidget {
+  final Profile profile;
+
+  const ProfileTabPage({Key key, @required this.profile}) : super(key: key);
+
+  Profile get _profile => profile;
+
+  Widget _buildPostPriceTag({@required BuildContext context}) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Container(
+          height: 30.0,
+          alignment: Alignment.center,
+          padding: EdgeInsets.symmetric(horizontal: 10.0),
+          decoration: BoxDecoration(
+            color: Colors.black12,
+            borderRadius: BorderRadius.only(
+                bottomRight: Radius.circular(15.0),
+                bottomLeft: Radius.circular(15.0)),
+            // borderRadius: BorderRadius.circular(25.0),
+          ),
+          child: Text(
+            '${_profile.followersCount} ${_profile.followersCount > 1 ? 'followers' : 'follower'}',
+            style: TextStyle(
+                color: Theme.of(context).primaryColor,
+                fontSize: 16.0,
+                fontWeight: FontWeight.w900),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final double _deviceWidth = MediaQuery.of(context).size.width;
@@ -19,22 +53,20 @@ class ProfileTabPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(
-                'Ella\'s Fashion Decore',
+                '${_profile.firstName.trim()} ${_profile.lastName.trim()}',
+                // 'Ella\'s Fashion Decore',
                 style: TextStyle(
                     color: Theme.of(context).accentColor,
                     fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 5.0),
+              // SizedBox(height: 5.0),
               Text(
-                'Ella\'s Fashion Decore',
+                '${_profile.businessName}',
                 style: TextStyle(
-                    // color: Theme.of(context).accentColor,
                     fontSize: 30.0,
                     fontWeight: FontWeight.w900),
               ),
-              Text('500 Followers',
-                  style: TextStyle(
-                      color: Colors.black38, fontWeight: FontWeight.bold)),
+              _buildPostPriceTag(context: context),
               SizedBox(height: 10.0),
               Row(
                 children: <Widget>[
@@ -47,17 +79,18 @@ class ProfileTabPage extends StatelessWidget {
               Row(
                 children: <Widget>[
                   Icon(Icons.phone_android, size: 15.0),
-                  Text('+233 271245698, '),
-                  Text('+233 271245698'),
+                  SizedBox(width: 5.0),
+                  Text('${_profile.phoneNumber}'),
+                  _profile.otherPhoneNumber.isEmpty
+                      ? Container()
+                      : Text(' ,${_profile.otherPhoneNumber}'),
                 ],
               ),
               SizedBox(height: 5.0),
               Row(
                 children: <Widget>[
                   Icon(Icons.location_on, size: 15.0),
-                  Expanded(
-                      child: Text(
-                          'Afienya Leadership & Skills Training Institute, Afienya')),
+                  Expanded(child: Text('${_profile.businessLocation}')),
                 ],
               ),
               SizedBox(height: 20.0),
@@ -76,11 +109,7 @@ class ProfileTabPage extends StatelessWidget {
               ),
               SizedBox(height: 10.0),
               Text(
-                'Nulla consequat laboris irure et do exercitation. Id velit aute officia in consectetur adipisicing elit exercitation sint ea sit nulla eu eu. Officia ipsum aliquip culpa est aute duis nulla nostrud incididunt sit cillum qui ex. Mollit et eiusmod fugiat amet voluptate esse anim non commodo et adipisicing proident non. Veniam do in commodo quis elit dolore voluptate non aliqua in sunt. Irure irure aliquip eu dolor pariatur id irure occaecat proident do dolor ea sunt. Do est culpa duis eiusmod culpa mollit.',
-                textAlign: TextAlign.justify,
-              ),
-              Text(
-                'Nulla consequat laboris irure et do exercitation. Id velit aute officia in consectetur adipisicing elit exercitation sint ea sit nulla eu eu. Officia ipsum aliquip culpa est aute duis nulla nostrud incididunt sit cillum qui ex. Mollit et eiusmod fugiat amet voluptate esse anim non commodo et adipisicing proident non. Veniam do in commodo quis elit dolore voluptate non aliqua in sunt. Irure irure aliquip eu dolor pariatur id irure occaecat proident do dolor ea sunt. Do est culpa duis eiusmod culpa mollit.',
+                '${_profile.businessDescription}',
                 textAlign: TextAlign.justify,
               ),
             ],
