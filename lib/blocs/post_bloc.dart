@@ -185,8 +185,10 @@ class PostBloc with ChangeNotifier {
     final int _postIndex =
         _posts.indexWhere((Post post) => post.postId == _postId);
 
-    _posts[_postIndex] =
-        _updatedPost; // update post in List<post> (optimistic update) in _posts
+    if (_postIndex != -1) {
+      _posts[_postIndex] =
+          _updatedPost; // update post in List<post> (optimistic update) in _posts
+    }
 
     final int _profilePostIndex = _profilePosts.indexWhere((Post post) =>
         post.postId == _postId); // get post index in _profilePosts;
@@ -198,8 +200,6 @@ class PostBloc with ChangeNotifier {
 
     // update post in List<post> (optimistic update) in _bookmarkedPosts
     if (_newBookmarkStatus) {
-      // increment post bookmark count
-
       _bookmarkedPosts.insert(0, _updatedPost);
     } else {
       _bookmarkedPosts.removeWhere(
@@ -256,12 +256,12 @@ class PostBloc with ChangeNotifier {
     final bool _newFollowingStatus = !_followingStatus;
 
     final int _updateFollowersCount = _newFollowingStatus
-          ? _profile.followersCount + 1
-          : _profile.followersCount - 1;
+        ? _profile.followersCount + 1
+        : _profile.followersCount - 1;
 
-
-    final Profile _updatedProfile =
-        _profile.copyWith(isFollowing: _newFollowingStatus, followersCount: _updateFollowersCount);
+    final Profile _updatedProfile = _profile.copyWith(
+        isFollowing: _newFollowingStatus,
+        followersCount: _updateFollowersCount);
 
     final List<Post> _userPosts = _posts
         .where((Post post) => post.userId == currentPostProfile.userId)

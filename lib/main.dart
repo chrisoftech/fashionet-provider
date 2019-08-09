@@ -76,6 +76,24 @@ class MyApp extends StatelessWidget {
             });
           }
 
+          
+          // get the details of selected profile post in profile posts
+          if (pathElements[1] == 'profile-post') {
+            final String _postId = pathElements[2];
+
+            return MaterialPageRoute(builder: (BuildContext context) {
+              return Consumer<PostBloc>(
+                builder:
+                    (BuildContext context, PostBloc postBloc, Widget child) {
+                  final Post _post = postBloc.profilePosts
+                      .firstWhere((Post post) => post.postId == _postId);
+
+                  return PostDetails(post: _post);
+                },
+              );
+            });
+          }
+
           // get the profile of selected post in feed
           if (pathElements[1] == 'post-profile') {
             final String _postId = pathElements[2];

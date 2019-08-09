@@ -24,7 +24,11 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
   bool get _isProfilePost => widget.isProfilePost;
 
   void _navigateToPostDetailsPage() {
-    Navigator.of(context).pushNamed('/post/${_post.postId}');
+    if (_isProfilePost) {
+      Navigator.of(context).pushNamed('/profile-post/${_post.postId}');
+    } else {
+      Navigator.of(context).pushNamed('/post/${_post.postId}');
+    }
   }
 
   void _navigateToProfilePage() {

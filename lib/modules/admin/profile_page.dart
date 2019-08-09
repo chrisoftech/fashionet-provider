@@ -146,7 +146,7 @@ class _ProfilePageState extends State<ProfilePage> {
         builder: (BuildContext context, PostBloc postBloc, Widget child) {
       final double _containerHeight = _profile.isFollowing ? 30.0 : 30.0;
       final double _containerWidth =
-          _isUserProfile ? 100.0 : _profile.isFollowing ? 115.0 : 140.0;
+          _isUserProfile ? 100.0 : _profile.isFollowing ? 110.0 : 140.0;
 
       return Material(
         elevation: 10.0,
@@ -205,9 +205,9 @@ class _ProfilePageState extends State<ProfilePage> {
                             color: Colors.black38,
                             borderRadius: BorderRadius.circular(5.0)),
                       ),
-                _isUserProfile ? Container() : SizedBox(width: 5.0),
+                _isUserProfile ? Container() : SizedBox(width: 10.0),
                 Text(
-                  '${_profile.followersCount} follower(s)',
+                  '${_profile.followersCount} ${_profile.followersCount > 1 ? 'followers' : 'follower'}',
                   style: TextStyle(color: Theme.of(context).primaryColor),
                 )
               ],
