@@ -1,66 +1,54 @@
+import 'package:fashionet_provider/blocs/blocs.dart';
+import 'package:fashionet_provider/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class SubscriptionTabPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildSliverList({@required ProfileBloc profileBloc}) {
     return SliverList(
       delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
-        return Card(
-          child: Column(
-            children: <Widget>[
-              ListTile(
-                leading: CircleAvatar(
-                  backgroundImage: AssetImage('assets/images/temp$index.jpg'),
-                ),
-                title: Text('John Doe $index',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text('Wednessday 22, May 2019'),
-                trailing: Material(
-                  elevation: 5.0,
-                  color: Theme.of(context).primaryColor,
-                  borderRadius: BorderRadius.circular(10.0),
-                  child: InkWell(
-                    onTap: () {
-                      print('Unsubscribe');
-                    },
-                    borderRadius: BorderRadius.circular(10.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10.0)),
-                      padding:
-                          EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
-                      child: Text(
-                        'Unsubscribe',
-                        style: TextStyle(color: Colors.white54),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              ListTile(
-                title: Text(
-                  'Description',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text(
-                  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc dolor purus, isaculis ac dolor nec, laoreet imperdiet eros.',
-                  overflow: TextOverflow.ellipsis,
-                ),
-                trailing: IconButton(
-                  icon: Icon(
-                    Icons.info_outline,
-                    size: 32.0,
-                    color: Theme.of(context).accentColor,
-                  ),
-                  onPressed: () {
-                    print('More information on $index');
-                  },
-                ),
-              ),
-            ],
-          ),
-        );
-      }, childCount: 10),
+        return ProfileSubscriptionCard(
+            profile: profileBloc.profileFollowing[index]);
+      }, childCount: profileBloc.profileFollowing.length),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<ProfileBloc>(
+        builder: (BuildContext context, ProfileBloc profileBloc, Widget child) {
+      return profileBloc.profileFollowingState == ProfileState.Loading
+          ? SliverToBoxAdapter(
+              child: Column(
+                children: <Widget>[
+                  SizedBox(height: 50.0),
+                  CircularProgressIndicator(),
+                ],
+              ),
+            )
+          : profileBloc.profileFollowing.length == 0
+              ? SliverToBoxAdapter(
+                  child: Column(
+                    children: <Widget>[
+                      SizedBox(height: 50.0),
+                      FlatButton(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Icon(Icons.refresh),
+                            Text('refresh'),
+                          ],
+                        ),
+                        onPressed: () {
+                          profileBloc.fetchUserProfileFollowing();
+                        },
+                      ),
+                      Text('Sorry! You are not subsribed to any page :('),
+                    ],
+                  ),
+                )
+              : _buildSliverList(profileBloc: profileBloc);
+    });
   }
 }

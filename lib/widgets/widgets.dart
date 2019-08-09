@@ -22,4 +22,5 @@ export 'profile/timeline-tabpage.dart';
 export 'shared/post_item_card_default.dart';
 export 'shared/post_item_card_large.dart';
 export 'shared/post_item_card_small.dart';
+export 'shared/profile_subscription_card.dart';
 export 'shared/search_form.dart';

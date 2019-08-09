@@ -230,7 +230,9 @@ class PostBloc with ChangeNotifier {
           isBookmarked: !_newBookmarkStatus,
           bookmarkCount: _updatedBookmarkCount);
 
-      _posts[_postIndex] = _updatedPost;
+      if (_postIndex != -1) {
+        _posts[_postIndex] = _updatedPost;
+      }
 
       if (_profilePostIndex != -1) {
         _profilePosts[_profilePostIndex] =
@@ -295,8 +297,13 @@ class PostBloc with ChangeNotifier {
     } catch (e) {
       print(e.toString());
 
-      final Profile _updatedProfile =
-          _profile.copyWith(isFollowing: !_newFollowingStatus);
+      final int _updateFollowersCount = !_newFollowingStatus
+          ? _profile.followersCount + 1
+          : _profile.followersCount - 1;
+
+      final Profile _updatedProfile = _profile.copyWith(
+          isFollowing: _newFollowingStatus,
+          followersCount: _updateFollowersCount);
 
       final List<Post> _userPosts = _posts
           .where((Post post) => post.userId == _profile.userId)

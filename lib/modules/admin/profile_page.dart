@@ -33,7 +33,8 @@ class _ProfilePageState extends State<ProfilePage> {
   Profile get _profile => _isUserProfile ? _userProfile : _post.profile;
 
   PostBloc _postBloc;
-  bool _isRefreshing = false;
+  ProfileBloc _profileBloc;
+  // bool _isRefreshing = false;
 
   @override
   void initState() {
@@ -41,6 +42,7 @@ class _ProfilePageState extends State<ProfilePage> {
     _scrollController.addListener(_onScroll);
 
     _postBloc = Provider.of<PostBloc>(context, listen: false);
+    _profileBloc = Provider.of<ProfileBloc>(context, listen: false);
     _onWidgetDidBuild(() {
       _postBloc.fetchProfilePosts(userId: _profile.userId);
     });
@@ -57,9 +59,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final currentScroll = _scrollController.position.pixels;
     if (maxScroll - currentScroll <= _scrollThreshold) {
       print('sroll next');
-      if (_currentDisplayedPageIndex == 0) {
-        _postBloc.fetchMoreProfilePosts(userId: _profile.userId);
-      }
+      _postBloc.fetchProfilePosts(userId: _profile.userId);
     }
   }
 
@@ -67,6 +67,14 @@ class _ProfilePageState extends State<ProfilePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       callback();
     });
+  }
+
+  void _fetchPageContent() async {
+    if (_currentDisplayedPageIndex == 0) {
+      await _postBloc.fetchProfilePosts(userId: _profile.userId);
+    } else if (_currentDisplayedPageIndex == 1) {
+      await _profileBloc.fetchUserProfileFollowing();
+    }
   }
 
   SliverAppBar _buildSliverAppBar(
@@ -93,6 +101,13 @@ class _ProfilePageState extends State<ProfilePage> {
               setState(() {
                 _currentDisplayedPageIndex = index;
               });
+
+              if (_currentDisplayedPageIndex == 0) {
+                _postBloc.fetchProfilePosts(userId: _profile.userId);
+              } else if (_currentDisplayedPageIndex == 1) {
+                _profileBloc.fetchUserProfileFollowing();
+              }
+              
               print(_currentDisplayedPageIndex);
             },
           )),
@@ -266,6 +281,7 @@ class _ProfilePageState extends State<ProfilePage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           _buildProfileAvatar(),
+           SizedBox(height: 5.0),
           _buildProfileName(),
           SizedBox(height: 5.0),
           _buildProfileFollowButton(),
@@ -339,6 +355,8 @@ class _ProfilePageState extends State<ProfilePage> {
         onRefresh: () async {
           if (_currentDisplayedPageIndex == 0) {
             await _postBloc.fetchProfilePosts(userId: _profile.userId);
+          } else if (_currentDisplayedPageIndex == 1) {
+            await _profileBloc.fetchUserProfileFollowing();
           }
         },
         child: CustomScrollView(

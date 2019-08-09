@@ -15,7 +15,10 @@ class ProfileBloc with ChangeNotifier {
   Asset _profileImage;
   Profile _postProfile;
   Profile _userProfile;
+  List<Profile> _profileFollowing;
+
   ProfileState _profileState = ProfileState.Default;
+  ProfileState _profileFollowingState = ProfileState.Default;
   ProfileState _userProfileState = ProfileState.Default;
   ProfileState _postProfileState = ProfileState.Default;
 
@@ -41,7 +44,10 @@ class ProfileBloc with ChangeNotifier {
   Asset get profileImage => _profileImage;
   Profile get postProfile => _postProfile;
   Profile get userProfile => _userProfile;
+  List<Profile> get profileFollowing => _profileFollowing;
+
   ProfileState get profileState => _profileState;
+  ProfileState get profileFollowingState => _profileFollowingState;
   ProfileState get userProfileState => _userProfileState;
   ProfileState get postProfileState => _postProfileState;
 
@@ -84,12 +90,24 @@ class ProfileBloc with ChangeNotifier {
 
   Future<void> toggleFollowProfilePageStatus(
       {@required Profile profile}) async {
+    // final String _profileId = profile.userId;
     final String _userId = await _authBloc.getUser;
 
     final String _postUserId = profile.userId;
 
     final bool _followingStatus = profile.isFollowing;
     final bool _newFollowingStatus = !_followingStatus;
+
+    // final Profile _updatedProfile =
+    //     profile.copyWith(isFollowing: _newFollowingStatus);
+
+    // if (_newFollowingStatus) {
+    //   _profileFollowing.insert(0, _updatedProfile);
+    // } else {
+    //   _profileFollowing
+    //       .removeWhere((Profile following) => following.userId == _profileId);
+    // }
+    // notifyListeners();
 
     try {
       if (_newFollowingStatus) {
@@ -103,6 +121,76 @@ class ProfileBloc with ChangeNotifier {
       }
     } catch (e) {
       print(e.toString());
+    }
+  }
+
+  Future<Profile> _fetchFollowingProfile(
+      {@required String postUserId, @required String currentUserId}) async {
+    DocumentSnapshot _snapshot =
+        await _profileRepository.fetchProfile(userId: postUserId);
+
+    final Profile _postProfile = Profile(
+      userId: _snapshot.documentID,
+      firstName: _snapshot.data['firstName'],
+      lastName: _snapshot.data['lastName'],
+      businessName: _snapshot.data['businessName'],
+      businessDescription: _snapshot.data['businessDescription'],
+      phoneNumber: _snapshot.data['phoneNumber'],
+      otherPhoneNumber: _snapshot.data['otherPhoneNumber'],
+      businessLocation: _snapshot.data['businessLocation'],
+      profileImageUrl: _snapshot.data['profileImageUrl'],
+      hasProfile: _snapshot.data['hasProfile'],
+      created: _snapshot.data['created'],
+      lastUpdate: _snapshot.data['lastUpdate'],
+    );
+
+    // get post user following status for current user
+    final bool _isFollowing = await _profileRepository.isFollowing(
+        postUserId: postUserId, userId: currentUserId);
+
+    // get follower count
+    final QuerySnapshot snapshot =
+        await _profileRepository.getProfileFollowers(userId: postUserId);
+    final int _profileFollowersCount = snapshot.documents.length;
+
+    return _postProfile.copyWith(
+        followersCount: _profileFollowersCount, isFollowing: _isFollowing);
+  }
+
+  Future<void> fetchUserProfileFollowing() async {
+    try {
+      _profileFollowingState = ProfileState.Loading;
+      notifyListeners();
+
+      final String _userId = await _authBloc.getUser;
+
+      final QuerySnapshot _snapshot =
+          await _profileRepository.getProfileFollowing(userId: _userId);
+
+      final List<Profile> profile = [];
+
+      print('Snapshot lenght ${_snapshot.documents.length}');
+
+      for (int i = 0; i < _snapshot.documents.length; i++) {
+        final DocumentSnapshot document = _snapshot.documents[i];
+        final String _profileId = document.documentID;
+        final Profile _profile = await _fetchFollowingProfile(
+            postUserId: _profileId, currentUserId: _userId);
+
+        profile.add(_profile);
+      }
+
+      _profileFollowing = profile;
+      _profileFollowingState = ProfileState.Success;
+      notifyListeners();
+
+      return;
+    } catch (e) {
+      print(e.toString());
+
+      _profileFollowingState = ProfileState.Failure;
+      notifyListeners();
+      return;
     }
   }
 
@@ -136,7 +224,7 @@ class ProfileBloc with ChangeNotifier {
       );
 
       final QuerySnapshot snapshot =
-          await _profileRepository.getProfileFollowing(userId: _userId);
+          await _profileRepository.getProfileFollowers(userId: _userId);
       final int _userProfileFollowersCount = snapshot.documents.length;
 
       setUserProfile(
@@ -184,7 +272,7 @@ class ProfileBloc with ChangeNotifier {
 
       // get follower count
       final QuerySnapshot snapshot =
-          await _profileRepository.getProfileFollowing(userId: userId);
+          await _profileRepository.getProfileFollowers(userId: userId);
       final int _profileFollowersCount = snapshot.documents.length;
 
       setProfile(

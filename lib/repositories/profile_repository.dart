@@ -14,6 +14,13 @@ class ProfileRepository {
     return _profileCollection.document(userId).get();
   }
 
+  Future<QuerySnapshot> getProfileFollowers({@required String userId}) {
+    return _profileCollection
+        .document(userId)
+        .collection('followers')
+        .getDocuments();
+  }
+
   Future<QuerySnapshot> getProfileFollowing({@required String userId}) {
     return _profileCollection
         .document(userId)
