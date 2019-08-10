@@ -373,7 +373,7 @@ class _ProfileFormState extends State<ProfileForm> {
 
   Widget _buildCustomSaveProfileFAB() {
     final double _buttonWidth =
-        _profileBloc.profileState == ProfileState.Loading ? 50.0 : 150.0;
+        _profileBloc.profileState == ProfileState.Loading ? 50.0 : 170.0;
 
     return Material(
       elevation: 10.0,
