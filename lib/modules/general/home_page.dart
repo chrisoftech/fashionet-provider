@@ -29,10 +29,33 @@ class _HomePageState extends State<HomePage> {
   bool _isPined = true;
   bool _isFavorite = false;
 
+  ProfileBloc _profileBloc;
+  PostBloc _postBloc;
+
+  bool _isRefreshing = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _profileBloc = Provider.of<ProfileBloc>(context, listen: false);
+    _postBloc = Provider.of<PostBloc>(context, listen: false);
+
+    _onWidgetDidBuild(() {
+      _profileBloc.fetchUserProfileFollowing();
+    });
+  }
+
   @override
   void dispose() {
-    super.dispose();
     _pageController.dispose();
+    super.dispose();
+  }
+
+  void _onWidgetDidBuild(Function callback) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      callback();
+    });
   }
 
   final Shader linearGradient = LinearGradient(
@@ -136,23 +159,26 @@ class _HomePageState extends State<HomePage> {
       width: _deviceWidth,
       child: Column(
         children: <Widget>[
-          SizedBox(height: 10.0),
           CategoryNavBar(
             onActiveCategoryChange: (String categoryId) {
               print(categoryId);
             },
           ),
           SizedBox(height: 10.0),
-          _isPined ? LatestPosts() : Container(),
-          SuggestedPosts(
-            isPined: _isPined,
-            isFavorite: _isFavorite,
-            onExpandSuggestedPostsToggle: (bool isPined) {
-              setState(() => _isPined = isPined);
-            },
-            onIsFavoriteToggle: (bool isFavorite) {
-              setState(() => _isFavorite = isFavorite);
-            },
+          _isPined
+              ? Flexible(child: LatestPosts(isRefreshing: _isRefreshing))
+              : Container(),
+          Flexible(
+            child: SuggestedPosts(
+              isPined: _isPined,
+              isFavorite: _isFavorite,
+              onExpandSuggestedPostsToggle: (bool isPined) {
+                setState(() => _isPined = isPined);
+              },
+              onIsFavoriteToggle: (bool isFavorite) {
+                setState(() => _isFavorite = isFavorite);
+              },
+            ),
           )
         ],
       ),
@@ -231,9 +257,17 @@ class _HomePageState extends State<HomePage> {
 
     _pageView = PageView(
       controller: _pageController,
-      onPageChanged: (int index) {
-        print('page changed to $index');
-        setState(() => _activePageIndex = index);
+      onPageChanged: (int index) async {
+        setState(() {
+          _activePageIndex = index;
+
+          _isRefreshing = true;
+        });
+
+        if (index == 0) {
+          await _profileBloc.fetchUserProfileFollowing();
+        }
+        setState(() => _isRefreshing = false);
       },
       children: <Widget>[
         _buildPageBody(_deviceHeight, _deviceWidth),
@@ -272,14 +306,25 @@ class _HomePageState extends State<HomePage> {
             // setState(() => _pageController.jumpToPage(index));
           },
         ),
-        body: SlidingUpPanel(
-          minHeight: 50.0,
-          renderPanelSheet: false,
-          controller: _panelController,
-          panel: _floatingPanel(),
-          collapsed: _floatingCollapsed(),
-          body: _pageView,
-        ),
+        body: Consumer<PostBloc>(
+            builder: (BuildContext context, PostBloc postBloc, Widget child) {
+          return RefreshIndicator(
+            onRefresh: () async {
+              // setState(() => _isRefreshing = true);
+              // await postBloc.fetchPosts();
+              // await _profileBloc.fetchUserProfileFollowing();
+              // setState(() => _isRefreshing = false);
+            },
+            child: SlidingUpPanel(
+              minHeight: 50.0,
+              renderPanelSheet: false,
+              controller: _panelController,
+              panel: _floatingPanel(),
+              collapsed: _floatingCollapsed(),
+              body: _pageView,
+            ),
+          );
+        }),
       ),
     );
   }

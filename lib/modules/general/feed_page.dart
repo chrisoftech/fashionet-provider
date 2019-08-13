@@ -75,7 +75,9 @@ class _FeedPageState extends State<FeedPage> {
                           child: Column(
                             children: <Widget>[
                               SizedBox(height: 50.0),
-                              CircularProgressIndicator(),
+                              _isRefreshing
+                                  ? Container()
+                                  : CircularProgressIndicator(),
                             ],
                           ),
                         )

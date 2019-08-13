@@ -46,6 +46,14 @@ class PostRepository {
     return _postCollection.document(postId).get();
   }
 
+  Future<QuerySnapshot> getFollowingLatestPosts({@required String userId}) {
+    return _postCollection
+        .orderBy('lastUpdate', descending: true)
+        .where('userId', isEqualTo: userId)
+        .limit(1)
+        .getDocuments();
+  }
+
   Future<QuerySnapshot> getPostBookmarks({@required String postId}) {
     return _postCollection
         .document(postId)

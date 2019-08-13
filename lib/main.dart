@@ -205,6 +205,7 @@ class _DynamicInitialPageState extends State<DynamicInitialPage> {
           case AuthState.Authenticating:
           case AuthState.Authenticated:
             _getHasProfile(profileBloc: _profileBloc);
+            // _loadFollowingProfileLatestPosts();
 
             return _hasProfile != null
                 ? _displayedAuthenticatedPage(profileBloc: _profileBloc)

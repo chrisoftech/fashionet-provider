@@ -198,6 +198,18 @@ class PostBloc with ChangeNotifier {
           _updatedPost; // update post in List<post> (optimistic update) in _profilePost
     }
 
+    // update post in List<post> (optimistic update) in ProfileBloc.latestFollowingProfilePost
+    final List<Post> _latestFollowingProfilePost =
+        ProfileBloc.latestFollowingProfilePost;
+
+    final latestFollowingProfilePostIndex = _latestFollowingProfilePost
+        .indexWhere((Post post) => post.postId == _postId);
+
+    if (latestFollowingProfilePostIndex != -1) {
+      ProfileBloc.latestFollowingProfilePost[latestFollowingProfilePostIndex] =
+          _updatedPost;
+    }
+
     // update post in List<post> (optimistic update) in _bookmarkedPosts
     if (_newBookmarkStatus) {
       _bookmarkedPosts.insert(0, _updatedPost);

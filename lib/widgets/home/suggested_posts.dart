@@ -124,35 +124,33 @@ class _SuggestedPostsState extends State<SuggestedPosts> {
 
   @override
   Widget build(BuildContext context) {
-    return Flexible(
-      child: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          return Padding(
-            padding: const EdgeInsets.only(left: 20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: _buildSuggestedPostsTitleRow(context: context),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: 9,
-                    padding: EdgeInsets.only(bottom: 170.0),
-                    itemBuilder: (BuildContext context, int index) {
-                      final int postIndex = index == 0 ? 9 : index;
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        return Padding(
+          padding: const EdgeInsets.only(left: 20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: _buildSuggestedPostsTitleRow(context: context),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: 9,
+                  padding: EdgeInsets.only(bottom: 170.0),
+                  itemBuilder: (BuildContext context, int index) {
+                    final int postIndex = index == 0 ? 9 : index;
 
-                      // return PostItemCardSmall(postIndex: postIndex);
-                      return Container();
-                    },
-                  ),
+                    // return PostItemCardSmall(postIndex: postIndex);
+                    return Container();
+                  },
                 ),
-              ],
-            ),
-          );
-        },
-      ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

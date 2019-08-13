@@ -11,11 +11,14 @@ class ProfileBloc with ChangeNotifier {
   final ProfileRepository _profileRepository;
   final ImageRepository _imageRepository;
   final AuthBloc _authBloc;
+  final PostRepository _postRepository;
+  //  PostBloc _postBloc =PostBloc;
 
   Asset _profileImage;
   Profile _postProfile;
   Profile _userProfile;
   List<Profile> _profileFollowing;
+  static List<Post> _latestFollowingProfilePost;
 
   ProfileState _profileState = ProfileState.Default;
   ProfileState _profileFollowingState = ProfileState.Default;
@@ -25,8 +28,10 @@ class ProfileBloc with ChangeNotifier {
   ProfileBloc.instance()
       : _profileRepository = ProfileRepository(),
         _imageRepository = ImageRepository(),
-        _authBloc = AuthBloc.instance() {
+        _authBloc = AuthBloc.instance(),
+        _postRepository = PostRepository() {
     fetchUserProfile();
+    fetchUserProfileFollowing();
   }
 
   // getters
@@ -45,6 +50,10 @@ class ProfileBloc with ChangeNotifier {
   Profile get postProfile => _postProfile;
   Profile get userProfile => _userProfile;
   List<Profile> get profileFollowing => _profileFollowing;
+ static List<Post> get latestFollowingProfilePost =>
+      _latestFollowingProfilePost != null
+          ? _latestFollowingProfilePost
+          : []; // returns empty list if _latestFollowingProfilePost is null
 
   ProfileState get profileState => _profileState;
   ProfileState get profileFollowingState => _profileFollowingState;
@@ -77,11 +86,9 @@ class ProfileBloc with ChangeNotifier {
     try {
       if (_newBookmarkStatus) {
         await _profileRepository.addToBookmark(postId: _postId, userId: userId);
-        print('Bookmarked user');
       } else {
         await _profileRepository.removeFromBookmark(
             postId: _postId, userId: userId);
-        print('Not Bookmarked user');
       }
     } catch (e) {
       print(e.toString());
@@ -98,30 +105,62 @@ class ProfileBloc with ChangeNotifier {
     final bool _followingStatus = profile.isFollowing;
     final bool _newFollowingStatus = !_followingStatus;
 
-    // final Profile _updatedProfile =
-    //     profile.copyWith(isFollowing: _newFollowingStatus);
-
-    // if (_newFollowingStatus) {
-    //   _profileFollowing.insert(0, _updatedProfile);
-    // } else {
-    //   _profileFollowing
-    //       .removeWhere((Profile following) => following.userId == _profileId);
-    // }
-    // notifyListeners();
-
     try {
       if (_newFollowingStatus) {
         await _profileRepository.addToFollowing(
             postUserId: _postUserId, userId: _userId);
-        print('Following user');
       } else {
         await _profileRepository.removeFromFollowing(
             postUserId: _postUserId, userId: _userId);
-        print('Not Following user');
       }
     } catch (e) {
       print(e.toString());
     }
+  }
+
+  Future<Post> _getPost(
+      {@required DocumentSnapshot document,
+      @required Profile postUserProfile}) async {
+    final String _currentUserId = await _authBloc.getUser; // get current-user
+
+    DocumentSnapshot _document = document;
+
+    final String _postId = _document.documentID;
+    final String _userId = _document.data['userId'];
+
+    final Profile _profile = postUserProfile;
+
+    final _post = Post(
+      userId: _userId,
+      postId: _postId,
+      title: _document.data['title'],
+      description: _document.data['description'],
+      price: _document.data['price'],
+      isAvailable: _document.data['isAvailable'],
+      imageUrls: _document.data['imageUrls'],
+      categories: _document.data['categories'],
+      created: _document.data['created'],
+      lastUpdate: _document.data['lastUpdate'],
+      profile: _profile,
+    );
+
+    // get post bookmark status for current user
+    final bool _isBookmarked = await _postRepository.isBookmarked(
+        postId: _postId, userId: _currentUserId);
+
+    // get post user following status for current user
+    final bool _isFollowing = await _profileRepository.isFollowing(
+        postUserId: _userId, userId: _currentUserId);
+
+    // get post bookmark count
+    QuerySnapshot _snapshot =
+        await _postRepository.getPostBookmarks(postId: _postId);
+    final int _postBookmarkCount = _snapshot.documents.length;
+
+    return _post.copyWith(
+        isBookmarked: _isBookmarked,
+        bookmarkCount: _postBookmarkCount,
+        profile: _profile.copyWith(isFollowing: _isFollowing));
   }
 
   Future<Profile> _fetchFollowingProfile(
@@ -157,6 +196,25 @@ class ProfileBloc with ChangeNotifier {
         followersCount: _profileFollowersCount, isFollowing: _isFollowing);
   }
 
+  Future<Post> _fetchFollowingLatestPosts(
+      {@required String postUserId, @required Profile postUserProfile}) async {
+    QuerySnapshot _snapshot =
+        await _postRepository.getFollowingLatestPosts(userId: postUserId);
+
+    final List<Post> _latesPosts = [];
+
+    for (int i = 0; i < _snapshot.documents.length; i++) {
+      final DocumentSnapshot document = _snapshot.documents[i];
+      final Post _post =
+          await _getPost(document: document, postUserProfile: postUserProfile);
+
+      _latesPosts.add(_post);
+    }
+
+    // return the first-post of this subscription profile
+    return _latesPosts[0];
+  }
+
   Future<void> fetchUserProfileFollowing() async {
     try {
       _profileFollowingState = ProfileState.Loading;
@@ -168,8 +226,10 @@ class ProfileBloc with ChangeNotifier {
           await _profileRepository.getProfileFollowing(userId: _userId);
 
       final List<Profile> profile = [];
+      final List<Post> profileLatestPost = [];
 
-      print('Snapshot lenght ${_snapshot.documents.length}');
+      print(
+          'UserProfileFollowing Snapshot lenght ${_snapshot.documents.length}');
 
       for (int i = 0; i < _snapshot.documents.length; i++) {
         final DocumentSnapshot document = _snapshot.documents[i];
@@ -177,10 +237,16 @@ class ProfileBloc with ChangeNotifier {
         final Profile _profile = await _fetchFollowingProfile(
             postUserId: _profileId, currentUserId: _userId);
 
+        final Post _profileLatestPost = await _fetchFollowingLatestPosts(
+            postUserId: _profileId, postUserProfile: _profile);
+
         profile.add(_profile);
+        profileLatestPost.add(_profileLatestPost);
       }
 
-      _profileFollowing = profile;
+      _profileFollowing = profile; // get profile of subscriptions
+      _latestFollowingProfilePost =
+          profileLatestPost; // get profile-post first-post of subscriptions
       _profileFollowingState = ProfileState.Success;
       notifyListeners();
 
