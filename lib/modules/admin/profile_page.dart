@@ -97,7 +97,7 @@ class _ProfilePageState extends State<ProfilePage> {
               if (_currentDisplayedPageIndex == 0) {
                 _postBloc.fetchProfilePosts(userId: _profile.userId);
               } else if (_currentDisplayedPageIndex == 1) {
-                _profileBloc.fetchUserProfileFollowing();
+                _profileBloc.fetchUserProfileSubscriptions();
               }
 
               print(_currentDisplayedPageIndex);
@@ -339,7 +339,7 @@ class _ProfilePageState extends State<ProfilePage> {
           if (_currentDisplayedPageIndex == 0) {
             await _postBloc.fetchProfilePosts(userId: _profile.userId);
           } else if (_currentDisplayedPageIndex == 1) {
-            await _profileBloc.fetchUserProfileFollowing();
+            await _profileBloc.fetchUserProfileSubscriptions();
           }
           setState(() => _isRefreshing = false);
         },

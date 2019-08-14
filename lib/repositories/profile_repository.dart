@@ -12,25 +12,7 @@ class ProfileRepository {
 
   Future<DocumentSnapshot> hasProfile({@required String userId}) async {
     return _profileCollection.document(userId).get();
-  }
-
-  Future<QuerySnapshot> getProfileFollowers({@required String userId}) {
-    return _profileCollection
-        .document(userId)
-        .collection('followers')
-        .getDocuments();
-  }
-
-  Future<QuerySnapshot> getProfileFollowing({@required String userId}) {
-    return _profileCollection
-        .document(userId)
-        .collection('following')
-        .getDocuments();
-  }
-
-  Future<DocumentSnapshot> fetchProfile({@required String userId}) {
-    return _profileCollection.document(userId).get();
-  }
+  }  
 
   Future<bool> isBookmarked(
       {@required String postId, @required String userId}) async {
@@ -64,7 +46,7 @@ class ProfileRepository {
         .delete();
   }
 
-  Future<bool> isFollowing(
+  Future<bool> isSubscribedTo(
       {@required String postUserId, @required String userId}) async {
     final DocumentSnapshot snapshot = await _profileCollection
         .document(userId)
@@ -75,7 +57,7 @@ class ProfileRepository {
     return snapshot.exists;
   }
 
-  Future<void> addToFollowing(
+  Future<void> subscribeTo(
       {@required String postUserId, @required String userId}) {
     return _profileCollection
         .document(userId)
@@ -84,7 +66,7 @@ class ProfileRepository {
         .setData({'isFollowing': true});
   }
 
-  Future<void> removeFromFollowing(
+  Future<void> unsubscribeFrom(
       {@required String postUserId, @required String userId}) {
     return _profileCollection
         .document(userId)
@@ -93,7 +75,7 @@ class ProfileRepository {
         .delete();
   }
 
-  Future<bool> isFollower(
+  Future<bool> isSubscriber(
       {@required String postUserId, @required String userId}) async {
     final DocumentSnapshot snapshot = await _profileCollection
         .document(postUserId)
@@ -104,7 +86,7 @@ class ProfileRepository {
     return snapshot.exists;
   }
 
-  Future<void> addToFollowers(
+  Future<void> addToSubscribers(
       {@required String postUserId, @required String userId}) {
     return _profileCollection
         .document(postUserId)
@@ -113,7 +95,7 @@ class ProfileRepository {
         .setData({'isFollowing': true});
   }
 
-  Future<void> removeFromFollowers(
+  Future<void> removeFromSubscribers(
       {@required String postUserId, @required String userId}) {
     return _profileCollection
         .document(postUserId)
@@ -122,12 +104,30 @@ class ProfileRepository {
         .delete();
   }
 
-  Future<QuerySnapshot> fetchBookmarkedPosts({@required String userId}) {
+  Future<QuerySnapshot> fetchProfileBookmarkedPosts({@required String userId}) {
     return _profileCollection
         .document(userId)
         .collection('bookmarks')
         .orderBy('lastUpdate', descending: true)
         .getDocuments();
+  }
+
+  Future<QuerySnapshot> fetchProfileSubscribers({@required String userId}) {
+    return _profileCollection
+        .document(userId)
+        .collection('followers')
+        .getDocuments();
+  }
+
+  Future<QuerySnapshot> fetchProfileSubscriptions({@required String userId}) {
+    return _profileCollection
+        .document(userId)
+        .collection('following')
+        .getDocuments();
+  }
+
+  Future<DocumentSnapshot> fetchProfile({@required String userId}) {
+    return _profileCollection.document(userId).get();
   }
 
   Future<void> createProfile(

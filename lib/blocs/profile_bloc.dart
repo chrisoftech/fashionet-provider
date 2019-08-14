@@ -12,16 +12,15 @@ class ProfileBloc with ChangeNotifier {
   final ImageRepository _imageRepository;
   final AuthBloc _authBloc;
   final PostRepository _postRepository;
-  //  PostBloc _postBloc =PostBloc;
 
   Asset _profileImage;
   Profile _postProfile;
   Profile _userProfile;
-  List<Profile> _profileFollowing;
-  static List<Post> _latestFollowingProfilePost;
+  List<Profile> _profileSubscriptions;
+  static List<Post> _latestProfileSubscriptionPosts;
 
   ProfileState _profileState = ProfileState.Default;
-  ProfileState _profileFollowingState = ProfileState.Default;
+  ProfileState _profileSubscriptionState = ProfileState.Default;
   ProfileState _userProfileState = ProfileState.Default;
   ProfileState _postProfileState = ProfileState.Default;
 
@@ -31,7 +30,7 @@ class ProfileBloc with ChangeNotifier {
         _authBloc = AuthBloc.instance(),
         _postRepository = PostRepository() {
     fetchUserProfile();
-    fetchUserProfileFollowing();
+    fetchUserProfileSubscriptions();
   }
 
   // getters
@@ -49,14 +48,14 @@ class ProfileBloc with ChangeNotifier {
   Asset get profileImage => _profileImage;
   Profile get postProfile => _postProfile;
   Profile get userProfile => _userProfile;
-  List<Profile> get profileFollowing => _profileFollowing;
- static List<Post> get latestFollowingProfilePost =>
-      _latestFollowingProfilePost != null
-          ? _latestFollowingProfilePost
+  List<Profile> get profileSubscriptions => _profileSubscriptions;
+  static List<Post> get latestProfileSubscriptionPosts =>
+      _latestProfileSubscriptionPosts != null
+          ? _latestProfileSubscriptionPosts
           : []; // returns empty list if _latestFollowingProfilePost is null
 
   ProfileState get profileState => _profileState;
-  ProfileState get profileFollowingState => _profileFollowingState;
+  ProfileState get profileSubscriptionState => _profileSubscriptionState;
   ProfileState get userProfileState => _userProfileState;
   ProfileState get postProfileState => _postProfileState;
 
@@ -74,6 +73,11 @@ class ProfileBloc with ChangeNotifier {
   void setUserProfile({@required Profile userProfile}) {
     _userProfile = userProfile;
     notifyListeners();
+  }
+
+  static void setLatestSubscribedProfilePost(
+      {@required List<Post> followingProfilePosts}) {
+    _latestProfileSubscriptionPosts = followingProfilePosts;
   }
 
   Future<void> togglePostBookmarkStatus(
@@ -107,10 +111,10 @@ class ProfileBloc with ChangeNotifier {
 
     try {
       if (_newFollowingStatus) {
-        await _profileRepository.addToFollowing(
+        await _profileRepository.subscribeTo(
             postUserId: _postUserId, userId: _userId);
       } else {
-        await _profileRepository.removeFromFollowing(
+        await _profileRepository.unsubscribeFrom(
             postUserId: _postUserId, userId: _userId);
       }
     } catch (e) {
@@ -149,12 +153,12 @@ class ProfileBloc with ChangeNotifier {
         postId: _postId, userId: _currentUserId);
 
     // get post user following status for current user
-    final bool _isFollowing = await _profileRepository.isFollowing(
+    final bool _isFollowing = await _profileRepository.isSubscribedTo(
         postUserId: _userId, userId: _currentUserId);
 
     // get post bookmark count
     QuerySnapshot _snapshot =
-        await _postRepository.getPostBookmarks(postId: _postId);
+        await _postRepository.fetchPostBookmarks(postId: _postId);
     final int _postBookmarkCount = _snapshot.documents.length;
 
     return _post.copyWith(
@@ -163,7 +167,7 @@ class ProfileBloc with ChangeNotifier {
         profile: _profile.copyWith(isFollowing: _isFollowing));
   }
 
-  Future<Profile> _fetchFollowingProfile(
+  Future<Profile> _fetchSubscribedProfile(
       {@required String postUserId, @required String currentUserId}) async {
     DocumentSnapshot _snapshot =
         await _profileRepository.fetchProfile(userId: postUserId);
@@ -184,22 +188,22 @@ class ProfileBloc with ChangeNotifier {
     );
 
     // get post user following status for current user
-    final bool _isFollowing = await _profileRepository.isFollowing(
+    final bool _isFollowing = await _profileRepository.isSubscribedTo(
         postUserId: postUserId, userId: currentUserId);
 
     // get follower count
     final QuerySnapshot snapshot =
-        await _profileRepository.getProfileFollowers(userId: postUserId);
-    final int _profileFollowersCount = snapshot.documents.length;
+        await _profileRepository.fetchProfileSubscribers(userId: postUserId);
+    final int _profileSubscribersCount = snapshot.documents.length;
 
     return _postProfile.copyWith(
-        followersCount: _profileFollowersCount, isFollowing: _isFollowing);
+        followersCount: _profileSubscribersCount, isFollowing: _isFollowing);
   }
 
-  Future<Post> _fetchFollowingLatestPosts(
+  Future<Post> _fetchSubscribedLatestPosts(
       {@required String postUserId, @required Profile postUserProfile}) async {
     QuerySnapshot _snapshot =
-        await _postRepository.getFollowingLatestPosts(userId: postUserId);
+        await _postRepository.fetchSubscribedLatestPosts(userId: postUserId);
 
     final List<Post> _latesPosts = [];
 
@@ -215,15 +219,15 @@ class ProfileBloc with ChangeNotifier {
     return _latesPosts[0];
   }
 
-  Future<void> fetchUserProfileFollowing() async {
+  Future<void> fetchUserProfileSubscriptions() async {
     try {
-      _profileFollowingState = ProfileState.Loading;
+      _profileSubscriptionState = ProfileState.Loading;
       notifyListeners();
 
       final String _userId = await _authBloc.getUser;
 
       final QuerySnapshot _snapshot =
-          await _profileRepository.getProfileFollowing(userId: _userId);
+          await _profileRepository.fetchProfileSubscriptions(userId: _userId);
 
       final List<Profile> profile = [];
       final List<Post> profileLatestPost = [];
@@ -234,27 +238,27 @@ class ProfileBloc with ChangeNotifier {
       for (int i = 0; i < _snapshot.documents.length; i++) {
         final DocumentSnapshot document = _snapshot.documents[i];
         final String _profileId = document.documentID;
-        final Profile _profile = await _fetchFollowingProfile(
+        final Profile _profile = await _fetchSubscribedProfile(
             postUserId: _profileId, currentUserId: _userId);
 
-        final Post _profileLatestPost = await _fetchFollowingLatestPosts(
+        final Post _profileLatestPost = await _fetchSubscribedLatestPosts(
             postUserId: _profileId, postUserProfile: _profile);
 
         profile.add(_profile);
         profileLatestPost.add(_profileLatestPost);
       }
 
-      _profileFollowing = profile; // get profile of subscriptions
-      _latestFollowingProfilePost =
+      _profileSubscriptions = profile; // get profile of subscriptions
+      _latestProfileSubscriptionPosts =
           profileLatestPost; // get profile-post first-post of subscriptions
-      _profileFollowingState = ProfileState.Success;
+      _profileSubscriptionState = ProfileState.Success;
       notifyListeners();
 
       return;
     } catch (e) {
       print(e.toString());
 
-      _profileFollowingState = ProfileState.Failure;
+      _profileSubscriptionState = ProfileState.Failure;
       notifyListeners();
       return;
     }
@@ -290,7 +294,7 @@ class ProfileBloc with ChangeNotifier {
       );
 
       final QuerySnapshot snapshot =
-          await _profileRepository.getProfileFollowers(userId: _userId);
+          await _profileRepository.fetchProfileSubscribers(userId: _userId);
       final int _userProfileFollowersCount = snapshot.documents.length;
 
       setUserProfile(
@@ -338,12 +342,12 @@ class ProfileBloc with ChangeNotifier {
 
       // get follower count
       final QuerySnapshot snapshot =
-          await _profileRepository.getProfileFollowers(userId: userId);
-      final int _profileFollowersCount = snapshot.documents.length;
+          await _profileRepository.fetchProfileSubscribers(userId: userId);
+      final int _profileSubscribersCount = snapshot.documents.length;
 
       setProfile(
           postProfile:
-              _postProfile.copyWith(followersCount: _profileFollowersCount));
+              _postProfile.copyWith(followersCount: _profileSubscribersCount));
 
       _postProfileState = ProfileState.Success;
       notifyListeners();

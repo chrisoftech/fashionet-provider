@@ -17,11 +17,11 @@ class LatestPosts extends StatelessWidget {
       return ListView.builder(
         padding: EdgeInsets.only(left: 20.0),
         scrollDirection: Axis.horizontal,
-        itemCount: ProfileBloc.latestFollowingProfilePost.length,
+        itemCount: ProfileBloc.latestProfileSubscriptionPosts.length,
         // itemCount: profileBloc.latestFollowingProfilePost.length,
         itemBuilder: (BuildContext context, int index) {
           return PostItemCardLarge(
-              post: ProfileBloc.latestFollowingProfilePost[index],
+              post: ProfileBloc.latestProfileSubscriptionPosts[index],
               // post: profileBloc.latestFollowingProfilePost[index],
               postIndex: index,
               constraints: constraints,
@@ -43,14 +43,14 @@ class LatestPosts extends StatelessWidget {
         return _isRefreshing
             ? _buildListView(
                 profileBloc: profileBloc, deviceWidth: _deviceWidth)
-            : profileBloc.profileFollowingState == ProfileState.Loading
+            : profileBloc.profileSubscriptionState == ProfileState.Loading
                 ? Column(
                     children: <Widget>[
                       SizedBox(height: 50.0),
                       _isRefreshing ? Container() : CircularProgressIndicator(),
                     ],
                   )
-                : ProfileBloc.latestFollowingProfilePost.length == 0
+                : ProfileBloc.latestProfileSubscriptionPosts.length == 0
                     // : profileBloc.latestFollowingProfilePost.length == 0
                     ? Column(
                         children: <Widget>[
@@ -65,7 +65,7 @@ class LatestPosts extends StatelessWidget {
                               ],
                             ),
                             onPressed: () {
-                              profileBloc.fetchUserProfileFollowing();
+                              profileBloc.fetchUserProfileSubscriptions();
                             },
                           ),
                           Text('Sorry, you are yet to subscribe to a post :('),

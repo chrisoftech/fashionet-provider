@@ -137,7 +137,7 @@ class MyApp extends StatelessWidget {
               return  Consumer<ProfileBloc>(
                 builder: (BuildContext context, ProfileBloc profileBloc,
                     Widget child) {
-                   final Profile _userProfile = profileBloc.profileFollowing
+                   final Profile _userProfile = profileBloc.profileSubscriptions
                       .firstWhere((Profile profile) => profile.userId == _profileId);
 
                   return ProfilePage(

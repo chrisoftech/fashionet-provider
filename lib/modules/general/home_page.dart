@@ -42,7 +42,7 @@ class _HomePageState extends State<HomePage> {
     _postBloc = Provider.of<PostBloc>(context, listen: false);
 
     _onWidgetDidBuild(() {
-      _profileBloc.fetchUserProfileFollowing();
+      _profileBloc.fetchUserProfileSubscriptions();
     });
   }
 
@@ -265,7 +265,7 @@ class _HomePageState extends State<HomePage> {
         });
 
         if (index == 0) {
-          await _profileBloc.fetchUserProfileFollowing();
+          await _profileBloc.fetchUserProfileSubscriptions();
         }
         setState(() => _isRefreshing = false);
       },

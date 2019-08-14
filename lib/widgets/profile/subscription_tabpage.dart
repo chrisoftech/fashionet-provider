@@ -14,8 +14,8 @@ class SubscriptionTabPage extends StatelessWidget {
     return SliverList(
       delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
         return ProfileSubscriptionCard(
-            profile: profileBloc.profileFollowing[index]);
-      }, childCount: profileBloc.profileFollowing.length),
+            profile: profileBloc.profileSubscriptions[index]);
+      }, childCount: profileBloc.profileSubscriptions.length),
     );
   }
 
@@ -25,7 +25,7 @@ class SubscriptionTabPage extends StatelessWidget {
         builder: (BuildContext context, ProfileBloc profileBloc, Widget child) {
       return 
       _isRefreshing ? _buildSliverList(profileBloc: profileBloc) : 
-      profileBloc.profileFollowingState == ProfileState.Loading
+      profileBloc.profileSubscriptionState == ProfileState.Loading
           ? SliverToBoxAdapter(
               child: Column(
                 children: <Widget>[
@@ -34,7 +34,7 @@ class SubscriptionTabPage extends StatelessWidget {
                 ],
               ),
             )
-          : profileBloc.profileFollowing.length == 0
+          : profileBloc.profileSubscriptions.length == 0
               ? SliverToBoxAdapter(
                   child: Column(
                     children: <Widget>[
@@ -49,7 +49,7 @@ class SubscriptionTabPage extends StatelessWidget {
                           ],
                         ),
                         onPressed: () {
-                          profileBloc.fetchUserProfileFollowing();
+                          profileBloc.fetchUserProfileSubscriptions();
                         },
                       ),
                       Text('Sorry! You are not subsribed to any page :('),

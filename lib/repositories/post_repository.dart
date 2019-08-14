@@ -3,7 +3,6 @@ import 'package:fashionet_provider/models/models.dart';
 import 'package:meta/meta.dart';
 
 class PostRepository {
-  // final Firestore _firestore;
   final FieldValue _firestoreTimestamp;
   final CollectionReference _postCollection;
 
@@ -42,11 +41,11 @@ class PostRepository {
         .delete();
   }
 
-  Future<DocumentSnapshot> getPost({@required String postId}) {
+  Future<DocumentSnapshot> fetchPost({@required String postId}) {
     return _postCollection.document(postId).get();
   }
 
-  Future<QuerySnapshot> getFollowingLatestPosts({@required String userId}) {
+  Future<QuerySnapshot> fetchSubscribedLatestPosts({@required String userId}) {
     return _postCollection
         .orderBy('lastUpdate', descending: true)
         .where('userId', isEqualTo: userId)
@@ -54,7 +53,7 @@ class PostRepository {
         .getDocuments();
   }
 
-  Future<QuerySnapshot> getPostBookmarks({@required String postId}) {
+  Future<QuerySnapshot> fetchPostBookmarks({@required String postId}) {
     return _postCollection
         .document(postId)
         .collection('bookmarks')

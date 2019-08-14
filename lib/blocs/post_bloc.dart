@@ -73,7 +73,7 @@ class PostBloc with ChangeNotifier {
   Future<Post> _getBookmarkPost({String postId}) async {
     final String _currentUserId = await _authBloc.getUser; // get current-user
 
-    DocumentSnapshot _document = await _postRepository.getPost(postId: postId);
+    DocumentSnapshot _document = await _postRepository.fetchPost(postId: postId);
 
     print('Get bookmarkPost');
 
@@ -104,12 +104,12 @@ class PostBloc with ChangeNotifier {
         postId: _postId, userId: _currentUserId);
 
     // get post user following status for current user
-    final bool _isFollowing = await _profileRepository.isFollowing(
+    final bool _isFollowing = await _profileRepository.isSubscribedTo(
         postUserId: _userId, userId: _currentUserId);
 
     // get post bookmark count
     QuerySnapshot _snapshot =
-        await _postRepository.getPostBookmarks(postId: _postId);
+        await _postRepository.fetchPostBookmarks(postId: _postId);
     final int _postBookmarkCount = _snapshot.documents.length;
 
     return _post.copyWith(
@@ -150,12 +150,12 @@ class PostBloc with ChangeNotifier {
         postId: _postId, userId: _currentUserId);
 
     // get post user following status for current user
-    final bool _isFollowing = await _profileRepository.isFollowing(
+    final bool _isFollowing = await _profileRepository.isSubscribedTo(
         postUserId: _userId, userId: _currentUserId);
 
     // get post bookmark count
     QuerySnapshot _snapshot =
-        await _postRepository.getPostBookmarks(postId: _postId);
+        await _postRepository.fetchPostBookmarks(postId: _postId);
     final int _postBookmarkCount = _snapshot.documents.length;
 
     return _post.copyWith(
@@ -200,14 +200,21 @@ class PostBloc with ChangeNotifier {
 
     // update post in List<post> (optimistic update) in ProfileBloc.latestFollowingProfilePost
     final List<Post> _latestFollowingProfilePost =
-        ProfileBloc.latestFollowingProfilePost;
+        ProfileBloc.latestProfileSubscriptionPosts;
 
     final latestFollowingProfilePostIndex = _latestFollowingProfilePost
         .indexWhere((Post post) => post.postId == _postId);
 
     if (latestFollowingProfilePostIndex != -1) {
-      ProfileBloc.latestFollowingProfilePost[latestFollowingProfilePostIndex] =
+      // ProfileBloc.latestFollowingProfilePost[latestFollowingProfilePostIndex] =
+      //     _updatedPost;
+
+      _latestFollowingProfilePost[latestFollowingProfilePostIndex] =
           _updatedPost;
+
+      ProfileBloc.setLatestSubscribedProfilePost(
+          followingProfilePosts: _latestFollowingProfilePost);
+      notifyListeners();
     }
 
     // update post in List<post> (optimistic update) in _bookmarkedPosts
@@ -247,8 +254,15 @@ class PostBloc with ChangeNotifier {
       }
 
       if (_profilePostIndex != -1) {
-        _profilePosts[_profilePostIndex] =
-            _updatedPost; // update post in List<post> (optimistic update) in _profilePost
+        // _profilePosts[_profilePostIndex] =
+        //     _updatedPost; // update post in List<post> (optimistic update) in _profilePost
+
+        _latestFollowingProfilePost[latestFollowingProfilePostIndex] =
+            _updatedPost;
+
+        ProfileBloc.setLatestSubscribedProfilePost(
+            followingProfilePosts: _latestFollowingProfilePost);
+        notifyListeners();
       }
 
       if (_newBookmarkStatus) {
@@ -295,10 +309,10 @@ class PostBloc with ChangeNotifier {
 
     try {
       if (_newFollowingStatus) {
-        await _profileRepository.addToFollowers(
+        await _profileRepository.addToSubscribers(
             postUserId: _profile.userId, userId: _currentUserId);
       } else {
-        await _profileRepository.removeFromFollowers(
+        await _profileRepository.removeFromSubscribers(
             postUserId: _profile.userId, userId: _currentUserId);
       }
 
@@ -341,7 +355,7 @@ class PostBloc with ChangeNotifier {
 
       final String _currentUserId = await _authBloc.getUser;
       QuerySnapshot _snapshot =
-          await _profileRepository.fetchBookmarkedPosts(userId: _currentUserId);
+          await _profileRepository.fetchProfileBookmarkedPosts(userId: _currentUserId);
 
       List<Post> posts = [];
 
