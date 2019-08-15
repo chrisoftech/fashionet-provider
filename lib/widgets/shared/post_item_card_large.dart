@@ -36,6 +36,61 @@ class _PostItemCardLargeState extends State<PostItemCardLarge> {
     Navigator.of(context).pushNamed('/subscribed-post-profile/${_post.postId}');
   }
 
+  Widget _buildPostPriceTag() {
+    return Positioned(
+      top: 30.0,
+      right: 0.0,
+      child: Container(
+        height: 30.0,
+        alignment: Alignment.center,
+        padding: EdgeInsets.symmetric(horizontal: 10.0),
+        decoration: BoxDecoration(
+          color: Colors.black54,
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(15.0),
+              bottomLeft: Radius.circular(15.0)),
+          // borderRadius: BorderRadius.circular(25.0),
+        ),
+        child: Text(
+          'GHC ${_post.price}',
+          style: TextStyle(
+              color: Colors.white, fontSize: 18.0, fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPostImageCount() {
+    return _post.imageUrls.length == 1
+        ? Container()
+        : Align(
+            alignment: Alignment.topRight,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Container(
+                  height: 30.0,
+                  alignment: Alignment.center,
+                  padding: EdgeInsets.symmetric(horizontal: 10.0),
+                  decoration: BoxDecoration(
+                    color: Colors.black12,
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(15.0),
+                        bottomLeft: Radius.circular(15.0)),
+                  ),
+                  child: Text(
+                    '+ ${_post.imageUrls.length - 1}',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 30.0,
+                        fontWeight: FontWeight.w900),
+                  ),
+                ),
+              ],
+            ),
+          );
+  }
+
   Widget _buildPostImage() {
     final double _maxHeight = widget.constraints.maxHeight;
 
@@ -51,7 +106,7 @@ class _PostItemCardLargeState extends State<PostItemCardLarge> {
       width: _parentContainerWidth,
       child: InkWell(
         onTap: () => _navigateToPostDetailsPage(),
-              child: _post != null && _post.imageUrls.isNotEmpty
+        child: _post != null && _post.imageUrls.isNotEmpty
             ? CachedNetworkImage(
                 imageUrl: '${_post.imageUrls[0]}',
                 placeholder: (context, imageUrl) =>
@@ -191,6 +246,8 @@ class _PostItemCardLargeState extends State<PostItemCardLarge> {
       children: <Widget>[
         _buildPostImage(),
         _buildPostContent(),
+        _buildPostPriceTag(),
+        _buildPostImageCount(),
       ],
     );
   }
