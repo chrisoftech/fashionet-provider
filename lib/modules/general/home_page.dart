@@ -245,7 +245,7 @@ class _HomePageState extends State<HomePage> {
           ]),
       child: Container(
         margin: EdgeInsets.only(top: 25.0),
-        child: PostForm(scaffoldKey: _scaffoldKey),
+        child: PostForm(key: _postBloc.postFormKey, scaffoldKey: _scaffoldKey),
       ),
     );
   }
@@ -337,6 +337,7 @@ class _HomePageState extends State<HomePage> {
         ),
         body: Consumer<PostBloc>(
             builder: (BuildContext context, PostBloc postBloc, Widget child) {
+          _postBloc = postBloc;
           return RefreshIndicator(
             onRefresh: () async {
               // setState(() => _isRefreshing = true);

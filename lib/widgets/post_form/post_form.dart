@@ -49,6 +49,16 @@ class _PostFormState extends State<PostForm> {
     _categoryScrollController.addListener(_onScroll);
   }
 
+  // @override
+  // void didUpdateWidget(PostForm oldWidget) {
+  //   if (oldWidget.key != widget.key) {
+  //     initState();
+  //     print('DidUpdate Fired');
+  //   }
+  //   print('Widget Key ${widget.key}');
+  //   super.didUpdateWidget(oldWidget);
+  // }
+
   @override
   void dispose() {
     super.dispose();
@@ -61,8 +71,6 @@ class _PostFormState extends State<PostForm> {
     _availabilityController.dispose();
 
     _categoryScrollController.removeListener(_onScroll);
-
-    print('Form disposed');
   }
 
   void _onScroll() {
@@ -764,6 +772,7 @@ class _PostFormState extends State<PostForm> {
     return Material(
       child: KeyboardAvoider(
         autoScroll: true,
+        // key: _keyboardAvoiderKey,
         child: CustomScrollView(
           controller: _scrollController,
           slivers: <Widget>[

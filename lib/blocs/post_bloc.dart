@@ -3,6 +3,7 @@ import 'package:fashionet_provider/blocs/blocs.dart';
 import 'package:fashionet_provider/models/models.dart';
 import 'package:fashionet_provider/repositories/repositories.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 
 enum PostState { Default, Loading, Success, Failure }
@@ -21,6 +22,8 @@ class PostBloc with ChangeNotifier {
   List<Post> _posts = [];
   List<Post> _bookmarkedPosts = [];
   List<Post> _profilePosts = [];
+
+  UniqueKey _postFormKey;
 
   bool _morePostsAvailable = true;
   bool _fetchingMorePosts = false;
@@ -48,11 +51,19 @@ class PostBloc with ChangeNotifier {
   List<Post> get bookmarkedPosts =>
       _bookmarkedPosts.where((Post post) => post.isBookmarked == true).toList();
 
+  UniqueKey get postFormKey => _postFormKey;
+
   bool get morePostsAvailable => _morePostsAvailable;
   bool get fetchingMorePosts => _fetchingMorePosts;
 
   bool get moreProfilePostsAvailable => _moreProfilePostsAvailable;
   bool get fetchingMoreProfilePosts => _fetchingMoreProfilePosts;
+
+  set postFormKey(UniqueKey formKey) {
+    _postFormKey = formKey;
+    print('This is the post form key $formKey');
+    notifyListeners();
+  }
 
   // methods
   Future<List<String>> _uploadPostImage(
@@ -73,7 +84,8 @@ class PostBloc with ChangeNotifier {
   Future<Post> _getBookmarkPost({String postId}) async {
     final String _currentUserId = await _authBloc.getUser; // get current-user
 
-    DocumentSnapshot _document = await _postRepository.fetchPost(postId: postId);
+    DocumentSnapshot _document =
+        await _postRepository.fetchPost(postId: postId);
 
     print('Get bookmarkPost');
 
@@ -354,8 +366,8 @@ class PostBloc with ChangeNotifier {
       notifyListeners();
 
       final String _currentUserId = await _authBloc.getUser;
-      QuerySnapshot _snapshot =
-          await _profileRepository.fetchProfileBookmarkedPosts(userId: _currentUserId);
+      QuerySnapshot _snapshot = await _profileRepository
+          .fetchProfileBookmarkedPosts(userId: _currentUserId);
 
       List<Post> posts = [];
 

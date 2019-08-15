@@ -24,11 +24,14 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
   Post get _post => widget.post;
   bool get _isProfilePost => widget.isProfilePost;
 
+  PostBloc _postBloc;
+
   initState() {
     super.initState();
 
     final ProfileBloc _profileBloc =
         Provider.of<ProfileBloc>(context, listen: false);
+    _postBloc = Provider.of<PostBloc>(context, listen: false);
 
     if (_profileBloc.userProfile != null) {
       setState(() {
@@ -48,7 +51,10 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
   }
 
   void _navigateToProfilePage() {
-    Navigator.of(context).pushNamed('/post-profile/${_post.postId}');
+    Navigator.of(context).pushNamed('/post-profile/${_post.postId}').then((_) {
+      final _postFormKey = UniqueKey();
+      _postBloc.postFormKey = _postFormKey;
+    });
   }
 
   Widget _buildActivePostImage() {

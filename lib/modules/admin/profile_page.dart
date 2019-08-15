@@ -5,6 +5,7 @@ import 'package:fashionet_provider/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:popup_menu/popup_menu.dart';
 import 'package:provider/provider.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class ProfilePage extends StatefulWidget {
   final Profile userProfile;
@@ -18,6 +19,9 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   PopupMenu _menu;
   GlobalKey _menuButtonKey = GlobalKey();
+  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  final PanelController _panelController = PanelController();
 
   int _currentDisplayedPageIndex = 0;
   final _scrollController = ScrollController();
@@ -327,11 +331,14 @@ class _ProfilePageState extends State<ProfilePage> {
       highlightElevation: 10.0,
       backgroundColor: Theme.of(context).primaryColor,
       child: Icon(
-        Icons.add_a_photo,
-        size: 32.0,
+        Icons.call,
+        size: 30.0,
         color: Colors.white,
       ),
-      onPressed: () => Navigator.of(context).pushNamed('/post-form'),
+      onPressed: () {
+        print('call ${_profile.firstName}');
+        // Navigator.of(context).pushNamed('/post-form');
+      },
     );
   }
 
@@ -363,6 +370,67 @@ class _ProfilePageState extends State<ProfilePage> {
     return _dynamicSliverContent;
   }
 
+  Widget _floatingCollapsed() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 0.0),
+      decoration: BoxDecoration(
+        color: Theme.of(context).primaryColor,
+        // color: Colors.blueGrey,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24.0), topRight: Radius.circular(24.0)),
+      ),
+      child: Center(
+        child: Text(
+          'Slide up to post item',
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  Widget _floatingPanel() {
+    return Container(
+      margin: const EdgeInsets.only(top: 24.0, right: 24.0, left: 24.0),
+      decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(24.0), topRight: Radius.circular(24.0)),
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 20.0,
+              color: Colors.grey,
+            ),
+          ]),
+      child: Container(
+        margin: EdgeInsets.only(top: 25.0),
+        child: PostForm(scaffoldKey: _scaffoldKey),
+      ),
+    );
+  }
+
+  Widget _buildCustomScrollView(
+      {@required double deviceHeight, @required deviceWidth}) {
+    return CustomScrollView(
+      controller: _scrollController,
+      slivers: <Widget>[
+        _buildSliverAppBar(context, deviceHeight, deviceWidth),
+        _buildDynamicSliverContent(),
+      ],
+    );
+  }
+
+  Widget _buildSlideUpPanel(
+      {@required double deviceHeight, @required deviceWidth}) {
+    return SlidingUpPanel(
+        minHeight: 50.0,
+        renderPanelSheet: false,
+        controller: _panelController,
+        panel: _floatingPanel(),
+        collapsed: _floatingCollapsed(),
+        body: _buildCustomScrollView(
+            deviceHeight: deviceHeight, deviceWidth: deviceWidth));
+  }
+
   @override
   Widget build(BuildContext context) {
     final double _deviceHeight = MediaQuery.of(context).size.height;
@@ -374,7 +442,10 @@ class _ProfilePageState extends State<ProfilePage> {
         return true;
       },
       child: Scaffold(
-        floatingActionButton: _buildProfileFAB(),
+        key: _scaffoldKey,
+        resizeToAvoidBottomInset: false,
+        floatingActionButton:
+            _isCurrentUserProfile ? Container() : _buildProfileFAB(),
         body: RefreshIndicator(
           onRefresh: () async {
             setState(() => _isRefreshing = true);
@@ -385,13 +456,11 @@ class _ProfilePageState extends State<ProfilePage> {
             }
             setState(() => _isRefreshing = false);
           },
-          child: CustomScrollView(
-            controller: _scrollController,
-            slivers: <Widget>[
-              _buildSliverAppBar(context, _deviceHeight, _deviceWidth),
-              _buildDynamicSliverContent(),
-            ],
-          ),
+          child: _isCurrentUserProfile
+              ? _buildSlideUpPanel(
+                  deviceHeight: _deviceHeight, deviceWidth: _deviceWidth)
+              : _buildCustomScrollView(
+                  deviceHeight: _deviceHeight, deviceWidth: _deviceWidth),
         ),
       ),
     );

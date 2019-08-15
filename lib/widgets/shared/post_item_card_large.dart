@@ -81,7 +81,7 @@ class _PostItemCardLargeState extends State<PostItemCardLarge> {
                   child: Text(
                     '+ ${_post.imageUrls.length - 1}',
                     style: TextStyle(
-                        color: Colors.white,
+                        color: Colors.white54,
                         fontSize: 30.0,
                         fontWeight: FontWeight.w900),
                   ),
