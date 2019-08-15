@@ -3,6 +3,7 @@ import 'package:fashionet_provider/blocs/blocs.dart';
 import 'package:fashionet_provider/models/models.dart';
 import 'package:fashionet_provider/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:popup_menu/popup_menu.dart';
 import 'package:provider/provider.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -15,6 +16,9 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  PopupMenu _menu;
+  GlobalKey _menuButtonKey = GlobalKey();
+
   int _currentDisplayedPageIndex = 0;
   final _scrollController = ScrollController();
   final _scrollThreshold = 200.0;
@@ -68,6 +72,36 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
+  void onClickMenu(MenuItemProvider item) {
+    print('Click menu -> ${item.menuTitle}');
+  }
+
+  void onDismiss() {
+    print('Menu is closed');
+  }
+
+  void _openCustomMenu() {
+    _menu = PopupMenu(
+        maxColumn: 1,
+        items: [
+          MenuItem(
+              title: 'Boost Ad',
+              image: Icon(
+                Icons.poll,
+                color: Colors.white,
+              )),
+          MenuItem(
+              title: 'Statistics',
+              image: Icon(
+                Icons.timeline,
+                color: Colors.white,
+              )),
+        ],
+        onClickMenu: onClickMenu,
+        onDismiss: onDismiss);
+    _menu.show(widgetKey: _menuButtonKey);
+  }
+
   SliverAppBar _buildSliverAppBar(
       BuildContext context, double _deviceHeight, double _deviceWidth) {
     return SliverAppBar(
@@ -77,7 +111,10 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       expandedHeight: 360.0,
       actions: <Widget>[
-        Icon(Icons.more_vert),
+        IconButton(
+            key: _menuButtonKey,
+            icon: Icon(Icons.more_vert),
+            onPressed: _openCustomMenu),
       ],
       flexibleSpace: FlexibleSpaceBar(
         background: _buildFlexibleSpace(
@@ -331,24 +368,30 @@ class _ProfilePageState extends State<ProfilePage> {
     final double _deviceHeight = MediaQuery.of(context).size.height;
     final double _deviceWidth = MediaQuery.of(context).size.width;
 
-    return Scaffold(
-      floatingActionButton: _buildProfileFAB(),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          setState(() => _isRefreshing = true);
-          if (_currentDisplayedPageIndex == 0) {
-            await _postBloc.fetchProfilePosts(userId: _profile.userId);
-          } else if (_currentDisplayedPageIndex == 1) {
-            await _profileBloc.fetchUserProfileSubscriptions();
-          }
-          setState(() => _isRefreshing = false);
-        },
-        child: CustomScrollView(
-          controller: _scrollController,
-          slivers: <Widget>[
-            _buildSliverAppBar(context, _deviceHeight, _deviceWidth),
-            _buildDynamicSliverContent(),
-          ],
+    return WillPopScope(
+      onWillPop: () async {
+        if (_menu != null) _menu.dismiss();
+        return true;
+      },
+      child: Scaffold(
+        floatingActionButton: _buildProfileFAB(),
+        body: RefreshIndicator(
+          onRefresh: () async {
+            setState(() => _isRefreshing = true);
+            if (_currentDisplayedPageIndex == 0) {
+              await _postBloc.fetchProfilePosts(userId: _profile.userId);
+            } else if (_currentDisplayedPageIndex == 1) {
+              await _profileBloc.fetchUserProfileSubscriptions();
+            }
+            setState(() => _isRefreshing = false);
+          },
+          child: CustomScrollView(
+            controller: _scrollController,
+            slivers: <Widget>[
+              _buildSliverAppBar(context, _deviceHeight, _deviceWidth),
+              _buildDynamicSliverContent(),
+            ],
+          ),
         ),
       ),
     );

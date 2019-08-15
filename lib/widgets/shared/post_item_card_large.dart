@@ -28,6 +28,14 @@ class _PostItemCardLargeState extends State<PostItemCardLarge> {
 
   PostBloc _postBloc;
 
+  void _navigateToPostDetailsPage() {
+    Navigator.of(context).pushNamed('/subscribed-post/${_post.postId}');
+  }
+
+  void _navigateToProfilePage() {
+    Navigator.of(context).pushNamed('/subscribed-post-profile/${_post.postId}');
+  }
+
   Widget _buildPostImage() {
     final double _maxHeight = widget.constraints.maxHeight;
 
@@ -41,39 +49,43 @@ class _PostItemCardLargeState extends State<PostItemCardLarge> {
       top: 0.0,
       height: _postImageContainerHeight,
       width: _parentContainerWidth,
-      child: _post != null && _post.imageUrls.isNotEmpty
-          ? CachedNetworkImage(
-              imageUrl: '${_post.imageUrls[0]}',
-              placeholder: (context, imageUrl) =>
-                  Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
-              errorWidget: (context, imageUrl, error) =>
-                  Center(child: Icon(Icons.error)),
-              imageBuilder: (BuildContext context, ImageProvider image) {
-                return Hero(
-                  tag: '${_post.postId}_${_post.imageUrls[0]}',
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10.0),
-                      image: DecorationImage(image: image, fit: BoxFit.cover),
+      child: InkWell(
+        onTap: () => _navigateToPostDetailsPage(),
+              child: _post != null && _post.imageUrls.isNotEmpty
+            ? CachedNetworkImage(
+                imageUrl: '${_post.imageUrls[0]}',
+                placeholder: (context, imageUrl) =>
+                    Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
+                errorWidget: (context, imageUrl, error) =>
+                    Center(child: Icon(Icons.error)),
+                imageBuilder: (BuildContext context, ImageProvider image) {
+                  return Hero(
+                    tag: '${_post.postId}_${_post.imageUrls[0]}',
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10.0),
+                        image: DecorationImage(image: image, fit: BoxFit.cover),
+                      ),
                     ),
-                  ),
-                );
-              },
-            )
-          : Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10.0),
-                image: DecorationImage(
-                    image: AssetImage('assets/avatars/bg-avatar.png'),
-                    fit: BoxFit.cover),
+                  );
+                },
+              )
+            : Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10.0),
+                  image: DecorationImage(
+                      image: AssetImage('assets/avatars/bg-avatar.png'),
+                      fit: BoxFit.cover),
+                ),
               ),
-            ),
+      ),
     );
   }
 
   Widget _buildPostTitle() {
     return Flexible(
       child: ListTile(
+        onTap: () => _navigateToPostDetailsPage(),
         title: Text('${_post.title}',
             overflow: TextOverflow.ellipsis,
             style: TextStyle(fontWeight: FontWeight.bold)),
@@ -95,6 +107,7 @@ class _PostItemCardLargeState extends State<PostItemCardLarge> {
   Widget _buildPostUser() {
     return Flexible(
       child: ListTile(
+        onTap: () => _navigateToProfilePage(),
         leading: Container(
           height: 45.0,
           width: 45.0,

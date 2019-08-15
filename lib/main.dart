@@ -3,6 +3,7 @@ import 'package:fashionet_provider/models/models.dart';
 import 'package:fashionet_provider/modules/modules.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:popup_menu/popup_menu.dart';
 import 'package:provider/provider.dart';
 
 import 'widgets/widgets.dart';
@@ -76,7 +77,6 @@ class MyApp extends StatelessWidget {
             });
           }
 
-          
           // get the details of selected profile post in profile posts
           if (pathElements[1] == 'profile-post') {
             final String _postId = pathElements[2];
@@ -86,6 +86,23 @@ class MyApp extends StatelessWidget {
                 builder:
                     (BuildContext context, PostBloc postBloc, Widget child) {
                   final Post _post = postBloc.profilePosts
+                      .firstWhere((Post post) => post.postId == _postId);
+
+                  return PostDetails(post: _post);
+                },
+              );
+            });
+          }
+
+          // get details of subscribed post from subscribedPosts
+          if (pathElements[1] == 'subscribed-post') {
+            final String _postId = pathElements[2];
+
+            return MaterialPageRoute(builder: (BuildContext context) {
+              return Consumer<ProfileBloc>(
+                builder: (BuildContext context, ProfileBloc profileBloc,
+                    Widget child) {
+                  final Post _post = ProfileBloc.latestProfileSubscriptionPosts
                       .firstWhere((Post post) => post.postId == _postId);
 
                   return PostDetails(post: _post);
@@ -129,19 +146,36 @@ class MyApp extends StatelessWidget {
             });
           }
 
-          // get the profile of selected post in bookmarked posts
+          // get the profile of selected post in subscribed posts
           if (pathElements[1] == 'subscribed-post-profile') {
+            final String _postId = pathElements[2];
+
+            return MaterialPageRoute(builder: (BuildContext context) {
+              return Consumer<ProfileBloc>(
+                builder: (BuildContext context, ProfileBloc profileBloc,
+                    Widget child) {
+                  final Post _post = ProfileBloc.latestProfileSubscriptionPosts
+                      .firstWhere((Post post) => post.postId == _postId);
+
+                  return ProfilePage(userProfile: _post.profile);
+                },
+              );
+            });
+          }
+
+          // get the profile of selected subscription in user profile
+          if (pathElements[1] == 'subscribed-profile') {
             final String _profileId = pathElements[2];
 
             return MaterialPageRoute(builder: (BuildContext context) {
-              return  Consumer<ProfileBloc>(
+              return Consumer<ProfileBloc>(
                 builder: (BuildContext context, ProfileBloc profileBloc,
                     Widget child) {
-                   final Profile _userProfile = profileBloc.profileSubscriptions
-                      .firstWhere((Profile profile) => profile.userId == _profileId);
+                  final Profile _userProfile = profileBloc.profileSubscriptions
+                      .firstWhere(
+                          (Profile profile) => profile.userId == _profileId);
 
-                  return ProfilePage(
-                      userProfile: _userProfile);
+                  return ProfilePage(userProfile: _userProfile);
                 },
               );
             });
@@ -155,8 +189,7 @@ class MyApp extends StatelessWidget {
                     Widget child) {
                   final Profile _userProfile = profileBloc.userProfile;
 
-                  return ProfilePage(
-                      userProfile: _userProfile);
+                  return ProfilePage(userProfile: _userProfile);
                 },
               );
             });
@@ -195,6 +228,7 @@ class _DynamicInitialPageState extends State<DynamicInitialPage> {
 
   @override
   Widget build(BuildContext context) {
+    PopupMenu.context = context;
     final ProfileBloc _profileBloc = Provider.of<ProfileBloc>(context);
 
     return Consumer<AuthBloc>(

@@ -4,6 +4,7 @@ import 'package:fashionet_provider/blocs/blocs.dart';
 import 'package:fashionet_provider/models/models.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:popup_menu/popup_menu.dart';
 import 'package:provider/provider.dart';
 
 class PostDetails extends StatefulWidget {
@@ -16,9 +17,68 @@ class PostDetails extends StatefulWidget {
 }
 
 class _PostDetailsState extends State<PostDetails> {
+  PopupMenu _menu;
+  GlobalKey _menuButtonKey = GlobalKey();
+
   int _currentPostImageIndex = 0;
 
+  bool _isCurrentUserProfile = false;
+
   Post get _post => widget.post;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final ProfileBloc _profileBloc =
+        Provider.of<ProfileBloc>(context, listen: false);
+
+    if (_profileBloc.userProfile != null) {
+      setState(() {
+        _profileBloc.userProfile.userId == _post.profile.userId
+            ? _isCurrentUserProfile = true
+            : _isCurrentUserProfile = false;
+      });
+    }
+  }
+
+  void onClickMenu(MenuItemProvider item) {
+    print('Click menu -> ${item.menuTitle}');
+  }
+
+  void onDismiss() {
+    print('Menu is closed');
+  }
+
+  void _openCustomMenu() {
+    _menu = PopupMenu(
+        maxColumn: 1,
+        // backgroundColor: Theme.of(context).primaryColor,
+        // lineColor: Theme.of(context).accentColor,
+        items: [
+          MenuItem(
+              title: 'Edit',
+              image: Icon(
+                Icons.edit,
+                color: Colors.white,
+              )),
+          MenuItem(
+              title: 'Delete',
+              image: Icon(
+                Icons.delete,
+                color: Colors.white,
+              )),
+          MenuItem(
+              title: 'Boost this Ad',
+              image: Icon(
+                Icons.poll,
+                color: Colors.white,
+              )),
+        ],
+        onClickMenu: onClickMenu,
+        onDismiss: onDismiss);
+    _menu.show(widgetKey: _menuButtonKey);
+  }
 
   Widget _buildActivePostImage() {
     return Container(
@@ -181,13 +241,6 @@ class _PostDetailsState extends State<PostDetails> {
             ),
           ),
         ),
-        // Align(
-        //   alignment: Alignment.topRight,
-        //   child: Container(
-        //     padding: EdgeInsets.only(top: 50.0),
-        //     child:
-        //   ),
-        // ),
       ],
     );
   }
@@ -203,27 +256,33 @@ class _PostDetailsState extends State<PostDetails> {
       actions: <Widget>[
         Consumer<PostBloc>(
             builder: (BuildContext context, PostBloc postBloc, Widget child) {
-          return Material(
-            color: Colors.transparent,
-            child: IconButton(
-              tooltip: 'Save this post',
-              icon: Icon(
+          return InkWell(
+            onTap: () {
+              postBloc.toggleBookmarkStatus(post: _post);
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(2.0),
+              child: Icon(
                 _post.isBookmarked ? Icons.bookmark : Icons.bookmark_border,
                 color: Theme.of(context).accentColor,
               ),
-              onPressed: () {
-                postBloc.toggleBookmarkStatus(post: _post);
-              },
             ),
           );
         }),
-        Material(
-          color: Colors.transparent,
-          child: IconButton(
-            icon: Icon(Icons.more_vert),
-            onPressed: () {},
-          ),
-        ),
+        !_isCurrentUserProfile ? Container() : SizedBox(width: 10.0),
+        !_isCurrentUserProfile
+            ? Container()
+            : InkWell(
+                key: _menuButtonKey,
+                onTap: _openCustomMenu,
+                child: Padding(
+                  padding: const EdgeInsets.all(2.0),
+                  child: Icon(
+                    Icons.more_vert,
+                  ),
+                ),
+              ),
+        SizedBox(width: 10.0),
       ],
     );
   }
@@ -454,15 +513,24 @@ class _PostDetailsState extends State<PostDetails> {
 
     // final PostBloc _postbloc = Provider.of<PostBloc>(context);
 
-    return Scaffold(
-        floatingActionButton: _buildControlFAB(),
-        body: SafeArea(
-          child: CustomScrollView(
-            slivers: <Widget>[
-              _buildSliverAppBar(deviceHeight: _deviceHeight),
-              _buildSliverList(),
-            ],
-          ),
-        ));
+    return WillPopScope(
+      onWillPop: () async {
+        await Future.delayed(Duration.zero);
+        if (_menu != null) {
+          _menu.dismiss();
+        }
+        return true;
+      },
+      child: Scaffold(
+          floatingActionButton: _buildControlFAB(),
+          body: SafeArea(
+            child: CustomScrollView(
+              slivers: <Widget>[
+                _buildSliverAppBar(deviceHeight: _deviceHeight),
+                _buildSliverList(),
+              ],
+            ),
+          )),
+    );
   }
 }

@@ -1,11 +1,10 @@
 import 'package:fashionet_provider/blocs/blocs.dart';
-import 'package:fashionet_provider/models/models.dart';
 import 'package:fashionet_provider/modules/modules.dart';
 import 'package:fashionet_provider/widgets/widgets.dart';
-import 'package:fashionet_provider/consts/const.dart' as consts;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+import 'package:popup_menu/popup_menu.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
@@ -15,7 +14,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  PopupMenu _menu;
+  GlobalKey _menuButtonKey = GlobalKey();
   GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   final PanelController _panelController = PanelController();
 
   Color get _primaryColor => Theme.of(context).primaryColor;
@@ -37,6 +39,9 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+
+    // initializing menu
+    _openCustomMenu();
 
     _profileBloc = Provider.of<ProfileBloc>(context, listen: false);
     _postBloc = Provider.of<PostBloc>(context, listen: false);
@@ -70,16 +75,67 @@ class _HomePageState extends State<HomePage> {
         });
   }
 
+  void onClickMenu(MenuItemProvider item) {
+    print('Click menu -> ${item.menuTitle}');
+    if (item.menuTitle == 'Profile') {
+      Navigator.of(context).pushNamed('/user-profile');
+    } else if (item.menuTitle == 'Categories') {
+      _openCategoryModal();
+    }
+  }
+
+  void onDismiss() {
+    print('Menu is closed');
+  }
+
+  void _openCustomMenu() {
+    _menu = PopupMenu(
+        // backgroundColor: Theme.of(context).primaryColor,
+        // lineColor: Theme.of(context).accentColor,
+        maxColumn: 1,
+        items: [
+          MenuItem(
+              title: 'Profile',
+              image: Icon(
+                Icons.person_outline,
+                color: Colors.white,
+              )),
+          MenuItem(
+              title: 'Categories',
+              image: Icon(
+                Icons.category,
+                color: Colors.white,
+              )),
+          MenuItem(
+              title: 'Settings',
+              image: Icon(
+                Icons.settings,
+                color: Colors.white,
+              )),
+          MenuItem(
+              title: 'Signout',
+              image: Icon(
+                Icons.exit_to_app,
+                color: Colors.white,
+              )),
+        ],
+        onClickMenu: onClickMenu,
+        onDismiss: onDismiss);
+    // _menu.show(widgetKey: _menuButtonKey);
+  }
+
   Widget _buildAppbarActionWidgets(
       {@required BuildContext context,
       @required int index,
       @required IconData icon}) {
     return InkWell(
+      key: index == 1 ? _menuButtonKey : null,
       onTap: () {
         if (index == 0) {
           Navigator.of(context).pushNamed('/search');
         } else if (index == 1) {
-          Navigator.of(context).pushNamed('/user-profile');
+          // _openCustomMenu();
+          _menu.show(widgetKey: _menuButtonKey);
         }
       },
       child: Padding(
@@ -91,36 +147,6 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
-  }
-
-  void _menuChoiceAction(String menuChoice) {
-    print(menuChoice);
-    if (menuChoice == 'Categories') {
-      _openCategoryModal();
-      // _navigateToCatgoryPage();
-      return;
-    }
-  }
-
-  Widget _buildAppBarMenuPopUp() {
-    return PopupMenuButton<String>(
-        onSelected: _menuChoiceAction,
-        icon: Icon(Icons.more_vert, size: 30.0, color: _primaryColor),
-        itemBuilder: (BuildContext context) {
-          return consts.menuOptions.map((MenuOption option) {
-            return PopupMenuItem(
-              value: option.menuOption,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  // Icon(option.icon),
-                  // SizedBox(width: 10.0),
-                  Text(option.menuOption),
-                ],
-              ),
-            );
-          }).toList();
-        });
   }
 
   AppBar _buildAppBar(BuildContext context) {
@@ -147,8 +173,9 @@ class _HomePageState extends State<HomePage> {
         _buildAppbarActionWidgets(
             context: context, index: 0, icon: Icons.search),
         _buildAppbarActionWidgets(
-            context: context, index: 1, icon: Icons.person_outline),
-        _buildAppBarMenuPopUp(),
+            context: context, index: 1, icon: Icons.more_vert),
+        SizedBox(width: 10.0)
+        // _buildAppBarMenuPopUp(),
       ],
     );
   }
@@ -253,7 +280,7 @@ class _HomePageState extends State<HomePage> {
     double _deviceWidth = MediaQuery.of(context).size.width;
 
     final AuthBloc _authBloc = Provider.of<AuthBloc>(context);
-    // _categoryBloc = Provider.of<CategoryBloc>(context);
+    // PopupMenu.context = context;
 
     _pageView = PageView(
       controller: _pageController,
@@ -280,7 +307,9 @@ class _HomePageState extends State<HomePage> {
       onWillPop: () {
         if (_panelController.isPanelOpen()) {
           _panelController.close();
+          _menu.dismiss();
         } else {
+          // _menu.dismiss();
           return _showExitAlertDialog();
         }
       },

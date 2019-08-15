@@ -19,7 +19,7 @@ class _ProfileSubscriptionCardState extends State<ProfileSubscriptionCard> {
   Profile get _profile => widget.profile;
 
    void _navigateToProfilePage() {
-    Navigator.of(context).pushNamed('/subscribed-post-profile/${_profile.userId}');
+    Navigator.of(context).pushNamed('/subscribed-profile/${_profile.userId}');
   }
 
   Widget _buildUnfollowButton() {
