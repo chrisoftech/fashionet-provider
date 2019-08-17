@@ -657,6 +657,15 @@ class _PostFormState extends State<PostForm> {
       return;
     }
 
+    if (!_isItemAvailable) {
+      _showMessageSnackBar(
+          content: 'This product should be available to continue!',
+          icon: Icons.error_outline,
+          isError: true);
+
+      return;
+    }
+
     bool _isPostSet;
 
     if (_post == null) {
@@ -696,13 +705,6 @@ class _PostFormState extends State<PostForm> {
         _scrollToStart();
       } else {
         _resetForm();
-      }
-
-      // fetch posts after creating or updating
-      await _postBloc.fetchPosts();
-      if (_post != null) {
-        await _postBloc.fetchBookmarkedPosts();
-        await _postBloc.fetchProfilePosts(userId: _post.profile.userId);
       }
     } else {
       _showMessageSnackBar(

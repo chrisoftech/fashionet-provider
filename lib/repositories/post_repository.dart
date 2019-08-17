@@ -142,4 +142,8 @@ class PostRepository {
       'lastUpdate': _firestoreTimestamp,
     }, merge: true);
   }
+
+  Future<void> deletePost({@required String postId}) {
+    return _postCollection.document(postId).delete();
+  }
 }

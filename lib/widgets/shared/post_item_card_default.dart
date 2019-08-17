@@ -298,6 +298,75 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
     );
   }
 
+  _showMessageSnackBar(
+      {@required String content,
+      @required IconData icon,
+      @required bool isError}) {
+    // if (_scaffoldKey.currentState != null) {
+    Scaffold.of(context)
+      // _scaffoldKey.currentState
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          duration: Duration(seconds: 4),
+          content: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(child: Text('$content')),
+              Icon(icon, color: isError ? Colors.red : Colors.green),
+            ],
+          ),
+        ),
+      );
+    // }
+  }
+
+  Future<void> _deletePost() async {
+    final bool _isDeleted = await _postBloc.deletePost(post: _post);
+    if (_isDeleted) {
+      // _showMessageSnackBar(
+      //     content: '${_post.title} is deleted sucessfully',
+      //     icon: Icons.check,
+      //     isError: false);
+      Navigator.of(context).pop();
+    } else {
+      _showMessageSnackBar(
+          content: 'Sorry! Something went wrong! Try again',
+          icon: Icons.error_outline,
+          isError: true);
+    }
+  }
+
+  void _buildDeleteConfirmationDialog() async {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Delete Post',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            content: Text('Are you sure of deleting ${_post.title}?'),
+            actions: <Widget>[
+              FlatButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text('Cancel')),
+              Consumer<PostBloc>(builder:
+                  (BuildContext context, PostBloc postBloc, Widget child) {
+                return RaisedButton(
+                    onPressed: () => _deletePost(),
+                    child: postBloc.postDeleteState == PostState.Loading
+                        ? Center(
+                            child: SizedBox(
+                                height: 20.0,
+                                width: 20.0,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2)))
+                        : Text('Delete'));
+              }),
+            ],
+          );
+        });
+  }
+
   void _choiceAction(String action) {
     if (action == consts.EDIT) {
       Navigator.push(context, SlideLeftRoute(page: PostEditForm(post: _post)))
@@ -305,6 +374,8 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
         final _postFormKey = UniqueKey();
         _postBloc.postFormKey = _postFormKey;
       });
+    } else if (action == consts.DELETE) {
+      _buildDeleteConfirmationDialog();
     }
   }
 

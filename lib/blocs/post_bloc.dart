@@ -16,6 +16,7 @@ class PostBloc with ChangeNotifier {
   final ProfileRepository _profileRepository;
 
   PostState _postState = PostState.Default;
+  PostState _postDeleteState = PostState.Default;
   PostState _bookmarkPostState = PostState.Default;
   PostState _profilePostState = PostState.Default;
 
@@ -43,6 +44,7 @@ class PostBloc with ChangeNotifier {
 
   // getters
   PostState get postState => _postState;
+  PostState get postDeleteState => _postDeleteState;
   PostState get bookmarkPostState => _bookmarkPostState;
   PostState get profilePostState => _profilePostState;
 
@@ -73,7 +75,7 @@ class PostBloc with ChangeNotifier {
       final String fileLocation = '$userId/posts';
 
       // delete images
-      if (assets.isNotEmpty) {
+      if (post != null && assets.isNotEmpty) {
         for (String imageUrl in post.imageUrls) {
           await _imageRepository.deleteImage(imageUrl: imageUrl);
         }
@@ -585,6 +587,11 @@ class PostBloc with ChangeNotifier {
         categories: categories,
       );
 
+      // fetch posts after creating or updating
+      fetchProfilePosts(userId: userId);
+      fetchPosts();
+      fetchBookmarkedPosts();
+
       _postState = PostState.Success;
       notifyListeners();
       return true;
@@ -631,6 +638,11 @@ class PostBloc with ChangeNotifier {
         categories: categories,
       );
 
+      // fetch posts after creating or updating
+      fetchProfilePosts(userId: userId);
+      fetchPosts();
+      fetchBookmarkedPosts();
+
       _postState = PostState.Success;
       notifyListeners();
       return true;
@@ -639,6 +651,53 @@ class PostBloc with ChangeNotifier {
       _postState = PostState.Failure;
       notifyListeners();
 
+      return false;
+    }
+  }
+
+  Future<bool> deletePost({@required Post post}) async {
+    try {
+      _postDeleteState = PostState.Loading;
+      notifyListeners();
+
+      // delete images
+      if (post.imageUrls.isNotEmpty) {
+        for (String imageUrl in post.imageUrls) {
+          await _imageRepository.deleteImage(imageUrl: imageUrl);
+        }
+      }
+
+      final String _postId = post.postId;
+
+      await _postRepository.deletePost(postId: _postId);
+
+      // remove post from post lists (optimistic update);
+      _posts.removeWhere((Post post) => post.postId == _postId);
+      _profilePosts.removeWhere((Post post) => post.postId == _postId);
+
+      // get post index in _posts;
+      // final int _postIndex =
+      //     _posts.indexWhere((Post post) => post.postId == _postId);
+
+      // if (_postIndex != -1) {
+      //   _posts[_postIndex] =
+      //       _updatedPost; // update post in List<post> (optimistic update) in _posts
+      // }
+
+      // final int _profilePostIndex = _profilePosts.indexWhere((Post post) =>
+      //     post.postId == _postId); // get post index in _profilePosts;
+
+      // if (_profilePostIndex != -1) {
+      //   _profilePosts[_profilePostIndex] =
+      //       _updatedPost; // update post in List<post> (optimistic update) in _profilePost
+      // }
+
+      _postDeleteState = PostState.Success;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _postDeleteState = PostState.Failure;
+      notifyListeners();
       return false;
     }
   }
