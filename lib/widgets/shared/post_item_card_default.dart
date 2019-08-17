@@ -57,7 +57,9 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
   }
 
   void _navigateToProfilePage() {
-    Navigator.of(context).pushNamed('/post-profile/${_post.postId}').then((_) {
+    Navigator.of(context)
+        .pushNamed('/post-profile/${_post.postId}/${_post.profile.userId}')
+        .then((_) {
       final _postFormKey = UniqueKey();
       _postBloc.postFormKey = _postFormKey;
     });
@@ -352,7 +354,9 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
               Consumer<PostBloc>(builder:
                   (BuildContext context, PostBloc postBloc, Widget child) {
                 return RaisedButton(
-                    onPressed: () => _deletePost(),
+                    onPressed: postBloc.postDeleteState == PostState.Loading
+                        ? null
+                        : () => _deletePost(),
                     child: postBloc.postDeleteState == PostState.Loading
                         ? Center(
                             child: SizedBox(

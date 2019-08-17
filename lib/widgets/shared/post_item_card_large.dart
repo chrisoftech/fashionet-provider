@@ -33,7 +33,8 @@ class _PostItemCardLargeState extends State<PostItemCardLarge> {
   }
 
   void _navigateToProfilePage() {
-    Navigator.of(context).pushNamed('/subscribed-post-profile/${_post.postId}');
+    Navigator.of(context).pushNamed(
+        '/subscribed-post-profile/${_post.postId}/${_post.profile.userId}');
   }
 
   Widget _buildPostPriceTag() {

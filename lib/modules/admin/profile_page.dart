@@ -439,11 +439,15 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return WillPopScope(
       onWillPop: () async {
-        if (_panelController.isPanelOpen()) {
-          _panelController.close();
-          _menu.dismiss();
+        if (_isCurrentUserProfile) {
+          if (_panelController.isPanelOpen()) {
+            _panelController.close();
+            _menu.dismiss();
+          } else {
+            // _menu.dismiss();
+            return true;
+          }
         } else {
-          // _menu.dismiss();
           return true;
         }
       },

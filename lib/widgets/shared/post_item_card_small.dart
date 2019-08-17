@@ -23,7 +23,8 @@ class _PostItemCardSmallState extends State<PostItemCardSmall> {
   }
 
   void _navigateToProfilePage() {
-    Navigator.of(context).pushNamed('/bookmarked-post-profile/${_bookmarkPost.postId}');
+    Navigator.of(context).pushNamed(
+        '/bookmarked-post-profile/${_bookmarkPost.postId}/${_bookmarkPost.profile.userId}');
   }
 
   Widget _buildPostPriceTag({@required BuildContext context}) {

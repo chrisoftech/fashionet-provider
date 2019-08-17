@@ -115,52 +115,65 @@ class MyApp extends StatelessWidget {
           // get the profile of selected post in feed
           if (pathElements[1] == 'post-profile') {
             final String _postId = pathElements[2];
+            final String _userId = pathElements[3];
 
             return MaterialPageRoute(builder: (BuildContext context) {
-              return Consumer<PostBloc>(
-                builder:
-                    (BuildContext context, PostBloc postBloc, Widget child) {
-                  final Post _post = postBloc.posts
-                      .firstWhere((Post post) => post.postId == _postId);
+              // pass currentUser profile if post userProfileId equals currentUserProfileId
+              return ProfileBloc.userProfile_copy.userId == _userId
+                  ? ProfilePage(userProfile: ProfileBloc.userProfile_copy)
+                  : Consumer<PostBloc>(
+                      builder: (BuildContext context, PostBloc postBloc,
+                          Widget child) {
+                        final Post _post = postBloc.posts
+                            .firstWhere((Post post) => post.postId == _postId);
 
-                  return ProfilePage(userProfile: _post.profile);
-                  // return ProfilePage(post: _post);
-                },
-              );
+                        return ProfilePage(userProfile: _post.profile);
+                        // return ProfilePage(post: _post);
+                      },
+                    );
             });
           }
 
           // get the profile of selected post in bookmarked posts
           if (pathElements[1] == 'bookmarked-post-profile') {
             final String _postId = pathElements[2];
+            final String _userId = pathElements[3];
 
             return MaterialPageRoute(builder: (BuildContext context) {
-              return Consumer<PostBloc>(
-                builder:
-                    (BuildContext context, PostBloc postBloc, Widget child) {
-                  final Post _post = postBloc.bookmarkedPosts
-                      .firstWhere((Post post) => post.postId == _postId);
+              // pass currentUser profile if post userProfileId equals currentUserProfileId
+              return ProfileBloc.userProfile_copy.userId == _userId
+                  ? ProfilePage(userProfile: ProfileBloc.userProfile_copy)
+                  : Consumer<PostBloc>(
+                      builder: (BuildContext context, PostBloc postBloc,
+                          Widget child) {
+                        final Post _post = postBloc.bookmarkedPosts
+                            .firstWhere((Post post) => post.postId == _postId);
 
-                  return ProfilePage(userProfile: _post.profile);
-                },
-              );
+                        return ProfilePage(userProfile: _post.profile);
+                      },
+                    );
             });
           }
 
           // get the profile of selected post in subscribed posts
           if (pathElements[1] == 'subscribed-post-profile') {
             final String _postId = pathElements[2];
+            final String _userId = pathElements[3];
 
             return MaterialPageRoute(builder: (BuildContext context) {
-              return Consumer<ProfileBloc>(
-                builder: (BuildContext context, ProfileBloc profileBloc,
-                    Widget child) {
-                  final Post _post = ProfileBloc.latestProfileSubscriptionPosts
-                      .firstWhere((Post post) => post.postId == _postId);
+              // pass currentUser profile if post userProfileId equals currentUserProfileId
+              return ProfileBloc.userProfile_copy.userId == _userId
+                  ? ProfilePage(userProfile: ProfileBloc.userProfile_copy)
+                  : Consumer<ProfileBloc>(
+                      builder: (BuildContext context, ProfileBloc profileBloc,
+                          Widget child) {
+                        final Post _post = ProfileBloc
+                            .latestProfileSubscriptionPosts
+                            .firstWhere((Post post) => post.postId == _postId);
 
-                  return ProfilePage(userProfile: _post.profile);
-                },
-              );
+                        return ProfilePage(userProfile: _post.profile);
+                      },
+                    );
             });
           }
 

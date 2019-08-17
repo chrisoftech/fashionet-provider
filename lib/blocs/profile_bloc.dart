@@ -15,7 +15,7 @@ class ProfileBloc with ChangeNotifier {
 
   Asset _profileImage;
   Profile _postProfile;
-  Profile _userProfile;
+  static Profile _userProfile;
   List<Profile> _profileSubscriptions;
   static List<Post> _latestProfileSubscriptionPosts;
 
@@ -48,6 +48,7 @@ class ProfileBloc with ChangeNotifier {
   Asset get profileImage => _profileImage;
   Profile get postProfile => _postProfile;
   Profile get userProfile => _userProfile;
+  static Profile get userProfile_copy => _userProfile;
   List<Profile> get profileSubscriptions => _profileSubscriptions;
   static List<Post> get latestProfileSubscriptionPosts =>
       _latestProfileSubscriptionPosts != null
