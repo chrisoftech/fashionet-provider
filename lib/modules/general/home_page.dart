@@ -1,4 +1,5 @@
 import 'package:fashionet_provider/blocs/blocs.dart';
+import 'package:fashionet_provider/models/models.dart';
 import 'package:fashionet_provider/modules/modules.dart';
 import 'package:fashionet_provider/widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -33,6 +34,7 @@ class _HomePageState extends State<HomePage> {
 
   ProfileBloc _profileBloc;
   PostBloc _postBloc;
+  // PostEditBloc _postEditBloc;
 
   bool _isRefreshing = false;
 
@@ -45,6 +47,7 @@ class _HomePageState extends State<HomePage> {
 
     _profileBloc = Provider.of<ProfileBloc>(context, listen: false);
     _postBloc = Provider.of<PostBloc>(context, listen: false);
+    //  _postEditBloc = Provider.of<PostEditBloc>(context, listen: false);
 
     _onWidgetDidBuild(() {
       _profileBloc.fetchUserProfileSubscriptions();
@@ -231,6 +234,19 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _floatingPanel() {
+    // if (_postBloc.openPostForm) {
+    //   _panelController.open();
+    // }
+
+    // final Post _editPost =
+    //     _postBloc.selectedPost != null ? _postBloc.selectedPost : null;
+
+    // final PostForm _postForm = PostForm(
+    //   key: _postBloc.postFormKey,
+    //   scaffoldKey: _scaffoldKey,
+    //   post: _postBloc.selectedPost,
+    // );
+
     return Container(
       margin: const EdgeInsets.only(top: 24.0, right: 24.0, left: 24.0),
       decoration: BoxDecoration(
@@ -280,7 +296,11 @@ class _HomePageState extends State<HomePage> {
     double _deviceWidth = MediaQuery.of(context).size.width;
 
     final AuthBloc _authBloc = Provider.of<AuthBloc>(context);
-    // PopupMenu.context = context;
+
+    // final PostBloc _postBlocEdit = Provider.of<PostBloc>(context);
+    // if (_postBlocEdit.openPostForm) {
+    //   _panelController.open();
+    // }
 
     _pageView = PageView(
       controller: _pageController,
@@ -305,6 +325,10 @@ class _HomePageState extends State<HomePage> {
 
     return WillPopScope(
       onWillPop: () {
+        // if (_postBloc.openPostForm) {
+        //   _panelController.close();
+        //   _postBloc.setSelectedPost = null;
+        // }
         if (_panelController.isPanelOpen()) {
           _panelController.close();
           _menu.dismiss();
@@ -338,6 +362,13 @@ class _HomePageState extends State<HomePage> {
         body: Consumer<PostBloc>(
             builder: (BuildContext context, PostBloc postBloc, Widget child) {
           _postBloc = postBloc;
+
+          // final bool _isEditingPost = _postBloc.openPostForm;
+
+          // if (_isEditingPost) {
+          //   _panelController.open();
+          // }
+
           return RefreshIndicator(
             onRefresh: () async {
               // setState(() => _isRefreshing = true);

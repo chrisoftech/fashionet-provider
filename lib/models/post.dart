@@ -9,7 +9,7 @@ class Post {
   final double price;
   final bool isAvailable;
   final List<dynamic> imageUrls;
-  final List<String> categories;
+  final List<dynamic> categories;
   final dynamic created;
   final dynamic lastUpdate;
   final Profile profile;
@@ -40,7 +40,7 @@ class Post {
     String price,
     String isAvailable,
     List<dynamic> imageUrls,
-    List<String> categories,
+    List<dynamic> categories,
     dynamic created,
     dynamic lastUpdate,
     Profile profile,

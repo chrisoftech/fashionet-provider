@@ -30,8 +30,9 @@ class _ProfilePageState extends State<ProfilePage> {
   Profile get _profile => widget.userProfile;
   bool _isCurrentUserProfile = false;
 
-  PostBloc _postBloc;
   ProfileBloc _profileBloc;
+  PostBloc _postBloc;
+  // PostEditBloc _postEditBloc;
   bool _isRefreshing = false;
 
   @override
@@ -39,8 +40,9 @@ class _ProfilePageState extends State<ProfilePage> {
     super.initState();
     _scrollController.addListener(_onScroll);
 
-    _postBloc = Provider.of<PostBloc>(context, listen: false);
     _profileBloc = Provider.of<ProfileBloc>(context, listen: false);
+    _postBloc = Provider.of<PostBloc>(context, listen: false);
+    // _postEditBloc = Provider.of<PostEditBloc>(context, listen: false);
 
     if (_profileBloc.userProfile != null) {
       setState(() {
@@ -375,7 +377,6 @@ class _ProfilePageState extends State<ProfilePage> {
       margin: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 0.0),
       decoration: BoxDecoration(
         color: Theme.of(context).primaryColor,
-        // color: Colors.blueGrey,
         borderRadius: BorderRadius.only(
             topLeft: Radius.circular(24.0), topRight: Radius.circular(24.0)),
       ),
@@ -438,8 +439,13 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return WillPopScope(
       onWillPop: () async {
-        if (_menu != null) _menu.dismiss();
-        return true;
+        if (_panelController.isPanelOpen()) {
+          _panelController.close();
+          _menu.dismiss();
+        } else {
+          // _menu.dismiss();
+          return true;
+        }
       },
       child: Scaffold(
         key: _scaffoldKey,

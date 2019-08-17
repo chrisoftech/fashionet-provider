@@ -109,4 +109,37 @@ class PostRepository {
       'lastUpdate': _firestoreTimestamp,
     });
   }
+
+  Future<void> updatePost(
+      {@required String postId,
+      @required List<String> imageUrls,
+      @required String userId,
+      @required String title,
+      @required String description,
+      @required double price,
+      @required bool isAvailable,
+      @required List<String> categories}) {
+    if (imageUrls.isEmpty) {
+      return _postCollection.document(postId).setData({
+        // 'imageUrls': imageUrls,
+        'userId': userId,
+        'title': title,
+        'description': description,
+        'price': price,
+        'isAvailable': isAvailable,
+        'category': categories,
+        'lastUpdate': _firestoreTimestamp,
+      }, merge: true);
+    }
+    return _postCollection.document(postId).setData({
+      'imageUrls': imageUrls,
+      'userId': userId,
+      'title': title,
+      'description': description,
+      'price': price,
+      'isAvailable': isAvailable,
+      'category': categories,
+      'lastUpdate': _firestoreTimestamp,
+    }, merge: true);
+  }
 }

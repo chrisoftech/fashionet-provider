@@ -2,8 +2,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:fashionet_provider/blocs/blocs.dart';
 import 'package:fashionet_provider/models/models.dart';
+import 'package:fashionet_provider/consts/const.dart' as consts;
+import 'package:fashionet_provider/transitions/transitions.dart';
+import 'package:fashionet_provider/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:popup_menu/popup_menu.dart';
 import 'package:provider/provider.dart';
 
 class PostItemCardDefault extends StatefulWidget {
@@ -25,6 +29,7 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
   bool get _isProfilePost => widget.isProfilePost;
 
   PostBloc _postBloc;
+  // PostEditBloc _postEditBloc;
 
   initState() {
     super.initState();
@@ -32,6 +37,7 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
     final ProfileBloc _profileBloc =
         Provider.of<ProfileBloc>(context, listen: false);
     _postBloc = Provider.of<PostBloc>(context, listen: false);
+    // _postEditBloc = Provider.of<PostEditBloc>(context, listen: false);
 
     if (_profileBloc.userProfile != null) {
       setState(() {
@@ -292,6 +298,31 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
     );
   }
 
+  void _choiceAction(String action) {
+    if (action == consts.EDIT) {
+      Navigator.push(context, SlideLeftRoute(page: PostEditForm(post: _post)))
+          .then((_) {
+        final _postFormKey = UniqueKey();
+        _postBloc.postFormKey = _postFormKey;
+      });
+    }
+  }
+
+  Widget _buildActionMenu() {
+    return PopupMenuButton<String>(
+      onSelected: _choiceAction,
+      tooltip: 'Choose an action',
+      itemBuilder: (BuildContext context) {
+        return consts.menuOptions.map((String item) {
+          return PopupMenuItem<String>(
+            value: item,
+            child: Text('$item'),
+          );
+        }).toList();
+      },
+    );
+  }
+
   Widget _buildPostListTile() {
     return ListTile(
       title:
@@ -299,15 +330,23 @@ class _PostItemCardDefaultState extends State<PostItemCardDefault> {
       subtitle: Text('${_post.description}', overflow: TextOverflow.ellipsis),
       trailing: Consumer<PostBloc>(
           builder: (BuildContext context, PostBloc postBloc, Widget child) {
-        return IconButton(
-          tooltip: 'Save this post',
-          icon: Icon(
-            _post.isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-            color: Theme.of(context).accentColor,
-          ),
-          onPressed: () {
-            postBloc.toggleBookmarkStatus(post: _post);
-          },
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            InkWell(
+              onTap: () {
+                postBloc.toggleBookmarkStatus(post: _post);
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(2.0),
+                child: Icon(
+                  _post.isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                  color: Theme.of(context).accentColor,
+                ),
+              ),
+            ),
+            !_isCurrentUserProfile ? Container() : _buildActionMenu()
+          ],
         );
       }),
     );

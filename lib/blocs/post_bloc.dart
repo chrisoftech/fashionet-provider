@@ -61,15 +61,23 @@ class PostBloc with ChangeNotifier {
 
   set postFormKey(UniqueKey formKey) {
     _postFormKey = formKey;
-    print('This is the post form key $formKey');
     notifyListeners();
   }
 
   // methods
   Future<List<String>> _uploadPostImage(
-      {@required String userId, @required List<Asset> assets}) async {
+      {@required String userId,
+      @required List<Asset> assets,
+      Post post}) async {
     try {
       final String fileLocation = '$userId/posts';
+
+      // delete images
+      if (assets.isNotEmpty) {
+        for (String imageUrl in post.imageUrls) {
+          await _imageRepository.deleteImage(imageUrl: imageUrl);
+        }
+      }
 
       final List<String> imageUrls = await _imageRepository.uploadPostImages(
           fileLocation: fileLocation, assets: assets);
@@ -105,7 +113,7 @@ class PostBloc with ChangeNotifier {
       price: _document.data['price'],
       isAvailable: _document.data['isAvailable'],
       imageUrls: _document.data['imageUrls'],
-      categories: _document.data['categories'],
+      categories: _document.data['category'],
       created: _document.data['created'],
       lastUpdate: _document.data['lastUpdate'],
       profile: _profile,
@@ -151,7 +159,7 @@ class PostBloc with ChangeNotifier {
       price: _document.data['price'],
       isAvailable: _document.data['isAvailable'],
       imageUrls: _document.data['imageUrls'],
-      categories: _document.data['categories'],
+      categories: _document.data['category'],
       created: _document.data['created'],
       lastUpdate: _document.data['lastUpdate'],
       profile: _profile,
@@ -568,6 +576,52 @@ class PostBloc with ChangeNotifier {
           await _uploadPostImage(userId: userId, assets: assets);
 
       await _postRepository.createPost(
+        imageUrls: _imageUrls,
+        userId: userId,
+        title: title,
+        description: description,
+        price: price,
+        isAvailable: isAvailable,
+        categories: categories,
+      );
+
+      _postState = PostState.Success;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      print(e.toString());
+      _postState = PostState.Failure;
+      notifyListeners();
+
+      return false;
+    }
+  }
+
+  Future<bool> updatePost(
+      {@required String postId,
+      @required List<Asset> assets,
+      @required String title,
+      @required String description,
+      @required double price,
+      @required bool isAvailable,
+      @required List<String> categories,
+      @required Post post}) async {
+    try {
+      _postState = PostState.Loading;
+      notifyListeners();
+
+      final String userId = await _authBloc.getUser;
+
+      final List<String> _imageUrls = [];
+      if (assets.isNotEmpty) {
+        final imageUrls =
+            await _uploadPostImage(userId: userId, assets: assets, post: post);
+
+        _imageUrls..addAll(imageUrls);
+      }
+
+      await _postRepository.updatePost(
+        postId: postId,
         imageUrls: _imageUrls,
         userId: userId,
         title: title,

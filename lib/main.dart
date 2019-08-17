@@ -22,6 +22,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<ProfileBloc>.value(
             value: ProfileBloc.instance()),
         ChangeNotifierProvider<PostBloc>.value(value: PostBloc.instance()),
+        // ListenableProvider<PostEditBloc>.value(value: PostEditBloc()),
         ChangeNotifierProvider<CategoryBloc>.value(
             value: CategoryBloc.instance()),
       ],

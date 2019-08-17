@@ -142,7 +142,7 @@ class ProfileBloc with ChangeNotifier {
       price: _document.data['price'],
       isAvailable: _document.data['isAvailable'],
       imageUrls: _document.data['imageUrls'],
-      categories: _document.data['categories'],
+      categories: _document.data['category'],
       created: _document.data['created'],
       lastUpdate: _document.data['lastUpdate'],
       profile: _profile,
